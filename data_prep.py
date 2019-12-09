@@ -23,7 +23,7 @@ def loadData():
     DATASET.sort_index(inplace=True)
 
 def add_delta_kwh(df):
-    df['delta_kwh'] = (df['soc_unp'] - df['soc_p']) * df['c_battery_size_max'] / 100
+    df['delta_kwh'] = (df['soc_unp'] - df['soc_p']) * df['c_battery_size_max'] / 100000
 
 if __name__ == "__main__":
     loadData()
@@ -33,4 +33,4 @@ if __name__ == "__main__":
 
     print(DATASET.head(50))
     print('Saving dataset ...')
-    DATASET.to_csv('data/prep.csv', sep=';')
+    DATASET.to_csv('data/prep.csv', sep=';', index=False)
