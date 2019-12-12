@@ -9,7 +9,7 @@ TRAIN_SPLIT = 0.8
 
 DATE_COLUMS = ['time_p', 'time_unp', 'time_fin']
 
-RELEVANT_COLUMNS = ['c_battery_size_max', 'c_kombi_current_remaining_range_electric', 'soc_p', 'soc_unp', 'delta_km', 'c_temperature', 'delta_kwh']
+# RELEVANT_COLUMNS = ['c_battery_size_max', 'c_kombi_current_remaining_range_electric', 'soc_p', 'soc_unp', 'delta_km', 'c_temperature', 'delta_kwh']
 
 NORM_RANGE = {'c_battery_size_max': (0, 100000), 'c_kombi_current_remaining_range_electric': (0, 500), 'soc_p': (0, 100), 'soc_unp': (0, 100), 'delta_km': (0, 500), 'c_temperature': (-20, 40), 'delta_kwh': (0, 100)}
 
@@ -25,6 +25,7 @@ def readPrepData ():
 def loadData():
     global DATASET
     global TRAIN_SPLIT
+    print('Reading data ...')
     # read the data file
     DATASET = readPrepData()
     # set time_p index
@@ -48,7 +49,7 @@ def getNormWeekOfYear(x):
 
 def normalizeData():
     global DATASET
-
+    print('Normalizing data ...')
     # add week of year
     DATASET['week_of_year'] = DATASET['time_p'].apply(getNormWeekOfYear)
     # normalize times in week 
@@ -93,8 +94,12 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
 
     if step == 0:
         step = int(history / 5) # set auto step on 1/5 of the history size
+        if step == 0:
+            step = 1            # at least 1
     
     step = datetime.timedelta(hours=step)
+
+    print('Labeling data ...')
 
     while start_date < end_date:
 
@@ -107,12 +112,12 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
     return np.array(data), np.array(labels)
 
 # returns a training dataset based on history in hours, target in hours and label type
-def getTrainingDataset(history, target_time, label_type, step=0):
+def getTrainDataset(history, target_time, label_type, step=0):
     global DATASET
     return getTFDataset(DATASET[:TRAIN_SPLIT], history, target_time, label_type, step=step)
 
 # returns a test dataset based on history in hours, target in hours and label type
-def getTestDataset(history, target_time, label_type, step=0):
+def getValDataset(history, target_time, label_type, step=0):
     global DATASET
     return getTFDataset(DATASET[TRAIN_SPLIT:], history, target_time, label_type, step=step)
 
