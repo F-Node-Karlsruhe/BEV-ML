@@ -89,34 +89,34 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
     data = []
     labels = []
 
-    start_date = dataset.index[0] + datetime.timedelta(hours=history)
-    end_date = dataset.index[-1] - datetime.timedelta(hours=target_time)
+    start_date = dataset.index[0] + datetime.timedelta(minutes=history)
+    end_date = dataset.index[-1] - datetime.timedelta(minutes=target_time)
 
     if step == 0:
         step = int(history / 5) # set auto step on 1/5 of the history size
         if step == 0:
             step = 1            # at least 1
     
-    step = datetime.timedelta(hours=step)
+    step = datetime.timedelta(minutes=step)
 
     print('Labeling data ...')
 
     while start_date < end_date:
 
-        data.append(np.array(dataset[start_date-datetime.timedelta(hours=history):start_date]))
+        data.append(np.array(dataset[start_date-datetime.timedelta(minutes=history):start_date]))
 
-        labels.append(np.array(getLabel(dataset[start_date-datetime.timedelta(hours=history):start_date+datetime.timedelta(hours=target_time)], lable_type, start_date)))
+        labels.append(np.array(getLabel(dataset[start_date-datetime.timedelta(minutes=history):start_date+datetime.timedelta(minutes=target_time)], lable_type, start_date)))
 
         start_date += step
 
     return np.array(data), np.array(labels)
 
-# returns a training dataset based on history in hours, target in hours and label type
+# returns a training dataset based on history in minutes, target in minutes and label type
 def getTrainDataset(history, target_time, label_type, step=0):
     global DATASET
     return getTFDataset(DATASET[:TRAIN_SPLIT], history, target_time, label_type, step=step)
 
-# returns a test dataset based on history in hours, target in hours and label type
+# returns a test dataset based on history in minutes, target in minutes and label type
 def getValDataset(history, target_time, label_type, step=0):
     global DATASET
     return getTFDataset(DATASET[TRAIN_SPLIT:], history, target_time, label_type, step=step)
