@@ -3,9 +3,9 @@ import tensorflow as tf
 import data_management
 
 # Training Parameters
-HISTORY_LENGTH = 3
+HISTORY_LENGTH = 180
 
-TARGET_LENGTH = 1
+TARGET_LENGTH = 60
 
 LABEL_TYPE = 'kwh'
 
@@ -21,13 +21,13 @@ data_management.init()
 #tf.random.set_seed(12345)
 
 x_train, y_train = data_management.getTrainDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
-
-print(x_train.dtype)
-print(y_train.dtype)
-print ('Single window of past history : {}'.format(x_train[0][0][0].dtype))
-
-
 x_val, y_val = data_management.getValDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
+
+x_train = tf.keras.preprocessing.sequence.pad_sequences(x_train, padding='post', dtype='float32')
+x_val = tf.keras.preprocessing.sequence.pad_sequences(x_val, padding='post', dtype='float32')
+print(x_train.dtype)
+print(y_train.dtype)                                                  
+
 
 train_data_single = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 train_data_single = train_data_single.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE).repeat()
