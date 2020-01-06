@@ -1,6 +1,10 @@
 import pandas as pd
 import datetime
 import numpy as np
+import sys
+
+# dtype
+DTYPE = 'float32'
 
 # reduce if your RAM is not sufficient
 DATASET_USAGE = 1.0
@@ -93,21 +97,29 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
     end_date = dataset.index[-1] - datetime.timedelta(minutes=target_time)
 
     if step == 0:
-        step = int(history / 5) # set auto step on 1/5 of the history size
+        step = int(history / 6) # set auto step on 1/6 of the history size
         if step == 0:
             step = 1            # at least 1
     
     step = datetime.timedelta(minutes=step)
 
+    count = 0
+
     print('Labeling data ...')
 
     while start_date < end_date:
 
-        data.append(np.array(dataset[start_date-datetime.timedelta(minutes=history):start_date]))
+        data.append(np.array(dataset[start_date-datetime.timedelta(minutes=history):start_date], dtype=DTYPE))
 
-        labels.append(np.array(getLabel(dataset[start_date-datetime.timedelta(minutes=history):start_date+datetime.timedelta(minutes=target_time)], lable_type, start_date)))
+        labels.append(np.array(getLabel(dataset[start_date-datetime.timedelta(minutes=history):start_date+datetime.timedelta(minutes=target_time)], lable_type, start_date), dtype=DTYPE))
 
         start_date += step
+
+        count+=1
+
+        sys.stdout.write("\r{0} - {1} {2} minute steps labeled".format(start_date, count, step))
+        sys.stdout.flush()
+    print('\n')
 
     return np.array(data), np.array(labels)
 

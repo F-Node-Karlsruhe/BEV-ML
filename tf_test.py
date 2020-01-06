@@ -6,6 +6,10 @@ import tensorflow as tf
 
 print(tf.test.is_built_with_cuda())
 
+# enable gpu processing on windows10
+gpus = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpus[0], True)
+
 mnist = tf.keras.datasets.mnist
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
