@@ -9,7 +9,7 @@ DTYPE = 'float32'
 # reduce if your RAM is not sufficient
 DATASET_USAGE = 1.0
 
-TRAIN_SPLIT = 0.8
+TRAIN_SPLIT = 0.9
 
 DATE_COLUMS = ['time_p', 'time_unp', 'time_fin']
 
@@ -17,7 +17,7 @@ DATE_COLUMS = ['time_p', 'time_unp', 'time_fin']
 
 NORM_RANGE = {'c_battery_size_max': (0, 100000), 'c_kombi_current_remaining_range_electric': (0, 500), 'soc_p': (0, 100), 'soc_unp': (0, 100), 'delta_km': (0, 500), 'c_temperature': (-20, 40), 'delta_kwh': (0, 100)}
 
-PATH_PREP = 'data/prep_test.csv'
+PATH_PREP = 'data/prep.csv'
 
 DATASET = None
 
@@ -44,6 +44,10 @@ def loadData():
 def normalizeNumber(x, bounds):
     space = bounds[1] - bounds[0]
     return (x - bounds[0]) / (space)
+
+def denormalizeNumber(x, bounds):
+    space = bounds[1] - bounds[0]
+    return bounds[0] + x * space
 
 def normalizeDatetime(x):
     return ( x.weekday() * 24 * 60 + x.hour * 60 + x.minute ) / 7 / 24 / 60  # normalize on minutely bases
@@ -80,6 +84,9 @@ def getKWHLabel(df, current_time):
     for index, row in df.iterrows():
         if row['time_p'] > current_time:
             sum += row['delta_kwh']
+    if sum > 50.0:
+        print(df)
+    
     return sum
 
 # returns the label dependent on the selected label type
@@ -117,7 +124,7 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
 
         count+=1
 
-        sys.stdout.write("\r{0} - {1} {2} minute steps labeled".format(start_date, count, step))
+        sys.stdout.write("\r{0} - {1} {2} minute steps labeled -> Label: {3}".format(start_date, count, step, labels[-1]))
         sys.stdout.flush()
     print('\n')
 
@@ -138,6 +145,3 @@ def init():
     loadData()
     normalizeData()
 
-if __name__ == "__main__":
-    loadData()
-    normalizeData()
