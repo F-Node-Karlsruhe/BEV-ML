@@ -82,11 +82,17 @@ def normalizeData():
 def getKWHLabel(df, current_time):
     return df[current_time:]['delta_kwh'].sum()
 
+# counts the the events in the target time frame
+def getCountLabel(df, current_time):
+    return len(df[current_time:].index)
+
 # returns the label dependent on the selected label type
 def getLabel(df, labelType, current_time):
     # current_time = normalizeDatetime(current_time)
     if labelType == 'kwh':
         return getKWHLabel(df, current_time)
+    if labelType == 'count':
+        return getCountLabel(df, current_time)
     return 0
 
 def getTFDataset(dataset, history, target_time, lable_type, step=0 ):

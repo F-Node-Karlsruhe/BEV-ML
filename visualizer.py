@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 
 import data_management
 
-def plot_data(columns, resample_intervall='1H'):
+def plot_data_kwh(columns, resample_intervall='1H'):
     data_management.loadData()
-    data_management.DATASET = data_management.DATASET.resample(resample_intervall).sum()
+    #data_management.DATASET = data_management.DATASET.resample(resample_intervall).sum()
     data_management.DATASET[columns].plot()
     plt.show()
 
@@ -24,6 +24,24 @@ def plot_train_history(history, title):
 
     plt.show()
 
+def plot_prediction_kwh(plot_data, title):
+  labels = ['History', 'True Future', 'Model Prediction']
+  marker = ['.-', 'rx', 'go']
+
+
+  plt.title(title)
+  for i, x in enumerate(plot_data):
+    if i:
+      plt.plot([len(plot_data[0])+1], plot_data[i], marker[i], markersize=10,
+               label=labels[i])
+    else:
+      plt.plot(plot_data[i].flatten(), marker[i], label=labels[i])
+  plt.legend()
+  plt.yscale('log')
+  plt.xlabel('Time-Step')
+  plt.ylabel('100 kwh')
+  plt.show()
+
 if __name__ == "__main__":
     print('Visualizer started...')
-    plot_data(['delta_kwh'])
+    plot_data_kwh(['delta_kwh'])

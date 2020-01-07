@@ -16,18 +16,20 @@ HISTORY_LENGTH = 180
 # target length in minutes
 TARGET_LENGTH = 60
 
-# label type ['kwh']
+# label type ['kwh', 'count']
 LABEL_TYPE = 'kwh'
 
 BATCH_SIZE = 100
 
 BUFFER_SIZE = 10000
 
-EPOCHS = 20
+EPOCHS = 100
 
 EVALUATION_INTERVAL = 2000
 
-PRETRAINED = True
+PRETRAINED = False
+
+TRAIN = False
 
 
 # init datamanagement
@@ -61,15 +63,30 @@ model.add(tf.keras.layers.Dense(1))
 model.compile(optimizer='adam', loss='mae')
 
 # load already existing model
-if PRETRAINED:
-    model = tf.keras.models.load_model('models/' + NAME)
+if PRETRAINED or not TRAIN:
+    model = tf.keras.models.load_model('models/' + NAME + '_' + LABEL_TYPE)
 
-history = model.fit(train_data, epochs=EPOCHS,
+if TRAIN:
+    history = model.fit(train_data, epochs=EPOCHS,
                                             steps_per_epoch=EVALUATION_INTERVAL,
                                             validation_data=val_data,
                                             validation_steps=50)
 
-# save the model to /models !NAME folder must already exist
-model.save('models/' + NAME,)
+    # save the model to /models !NAME folder must already exist
+    model.save('models/' + NAME + '_' + LABEL_TYPE)
+    
+    # show trian history
+    visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE)
 
-visualizer.plot_train_history(history, NAME)
+else:
+    val_data.shuffle(1000)
+    for x, y in val_data.take(1):
+        for i in range(BATCH_SIZE):
+            # only take non zero examples
+            if y[i] > 0:
+                if LABEL_TYPE == 'kwh':
+                    visualizer.plot_prediction_kwh([x[i][:, -2].numpy(), y[i].numpy(),
+                            model.predict(x)[i]], 'Prediction example kwh')
+                
+                
+                break
