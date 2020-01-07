@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 
 import data_management
 
-def plot_data(columns):
+def plot_data(columns, resample_intervall='1H'):
     data_management.loadData()
-    data_management.DATASET = data_management.DATASET.resample('1H').sum()
+    data_management.DATASET = data_management.DATASET.resample(resample_intervall).sum()
     data_management.DATASET[columns].plot()
     plt.show()
 

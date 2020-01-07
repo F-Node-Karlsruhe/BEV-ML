@@ -80,18 +80,11 @@ def normalizeData():
 
 # sum of loaded kwh plugged after current time
 def getKWHLabel(df, current_time):
-    sum = 0
-    for index, row in df.iterrows():
-        if row['time_p'] > current_time:
-            sum += row['delta_kwh']
-    if sum > 50.0:
-        print(df)
-    
-    return sum
+    return df[current_time:]['delta_kwh'].sum()
 
 # returns the label dependent on the selected label type
 def getLabel(df, labelType, current_time):
-    current_time = normalizeDatetime(current_time)
+    # current_time = normalizeDatetime(current_time)
     if labelType == 'kwh':
         return getKWHLabel(df, current_time)
     return 0
