@@ -21,13 +21,13 @@ HISTORY_LENGTH = 180
 TARGET_LENGTH = 60
 
 # label type ['kwh', 'count']
-LABEL_TYPE = 'kwh'
+LABEL_TYPE = 'count'
 
 BATCH_SIZE = 100
 
 BUFFER_SIZE = 10000
 
-EPOCHS = 100
+EPOCHS = 50
 
 EVALUATION_INTERVAL = 2000
 
@@ -35,7 +35,7 @@ LSTM_SIZE = 64
 
 PRETRAINED = False
 
-TRAIN = False
+TRAIN = True
 
 def getModelPath():
     global LSTM_SIZE
@@ -97,7 +97,7 @@ if TRAIN:
     model.save(getModelPath())
     
     # show trian history
-    visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + LSTM_SIZE)
+    visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + str(LSTM_SIZE))
 
 else:
     data, norm_data, label = data_management.getTestData(pd.Timestamp(2018, 6, 6, 12), HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
@@ -106,19 +106,3 @@ else:
 
     if LABEL_TYPE == 'kwh':
         visualizer.plot_prediction_kwh(data, label, prediction)
-
-    '''val_data.shuffle(1000)
-    for x, y in val_data.take(3):
-        for i in range(BATCH_SIZE):
-            # only take non zero examples
-            if y[i] > 0:
-                print(x.shape)
-                if LABEL_TYPE == 'kwh':
-                    visualizer.plot_prediction_kwh([x[i][:, -2].numpy(), y[i].numpy(),
-                            model.predict(x)[i]])
-                if LABEL_TYPE == 'count':
-                    visualizer.plot_prediction_count([x[i][:, -2].numpy(), y[i].numpy(),
-                            model.predict(x)[i]])
-                
-                
-                break'''
