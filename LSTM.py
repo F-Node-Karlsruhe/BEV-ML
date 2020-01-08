@@ -17,7 +17,7 @@ HISTORY_LENGTH = 180
 TARGET_LENGTH = 60
 
 # label type ['kwh', 'count']
-LABEL_TYPE = 'kwh'
+LABEL_TYPE = 'counter'
 
 BATCH_SIZE = 100
 

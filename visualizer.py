@@ -2,10 +2,19 @@ import matplotlib.pyplot as plt
 
 import data_management
 
-def plot_data_kwh(columns, resample_intervall='1H'):
+def plot_data(columns, resample_type, resample_intervall='1H'):
     data_management.loadData()
-    #data_management.DATASET = data_management.DATASET.resample(resample_intervall).sum()
-    data_management.DATASET[columns].plot()
+
+    if resample_type == 'kwh':
+      data_management.DATASET = data_management.DATASET[['delta_kwh']].resample(resample_intervall).sum()
+      data_management.DATASET[['delta_kwh']].plot()
+      plt.ylabel('kwh charged in ' + resample_intervall)
+
+    if resample_type == 'count':
+      data_management.DATASET = data_management.DATASET[['time_p']].resample(resample_intervall).count()
+      data_management.DATASET[['time_p']].plot(legend=None)
+      plt.ylabel('Number of events in ' + resample_intervall)
+
     plt.show()
 
 
@@ -44,4 +53,4 @@ def plot_prediction_kwh(plot_data, title):
 
 if __name__ == "__main__":
     print('Visualizer started...')
-    plot_data_kwh(['delta_kwh'])
+    plot_data(None, 'count')
