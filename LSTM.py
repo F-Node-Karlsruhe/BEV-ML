@@ -4,6 +4,8 @@ import data_management
 
 import visualizer
 
+import os
+
 NAME = 'LSTM'
 
 
@@ -17,7 +19,7 @@ HISTORY_LENGTH = 180
 TARGET_LENGTH = 60
 
 # label type ['kwh', 'count']
-LABEL_TYPE = 'counter'
+LABEL_TYPE = 'kwh'
 
 BATCH_SIZE = 100
 
@@ -27,9 +29,17 @@ EPOCHS = 100
 
 EVALUATION_INTERVAL = 2000
 
+LSTM_SIZE = 64
+
 PRETRAINED = False
 
 TRAIN = False
+
+def getModelPath():
+    global LSTM_SIZE
+    global NAME
+    global LABEL_TYPE
+    return 'models/' + NAME + '_' + LABEL_TYPE + '_' + str(LSTM_SIZE)
 
 
 # init datamanagement
@@ -57,14 +67,14 @@ val_data = tf.data.Dataset.from_tensor_slices((x_val, y_val))
 val_data = val_data.shuffle(1000).batch(BATCH_SIZE).repeat()
 
 model = tf.keras.models.Sequential()
-model.add(tf.keras.layers.LSTM(32, input_shape=(None, x_train.shape[-1])))
+model.add(tf.keras.layers.LSTM(LSTM_SIZE, input_shape=(None, x_train.shape[-1])))
 model.add(tf.keras.layers.Dense(1))
 
 model.compile(optimizer='adam', loss='mae')
 
 # load already existing model
 if PRETRAINED or not TRAIN:
-    model = tf.keras.models.load_model('models/' + NAME + '_' + LABEL_TYPE)
+    model = tf.keras.models.load_model(getModelPath())
 
 if TRAIN:
     history = model.fit(train_data, epochs=EPOCHS,
@@ -73,20 +83,28 @@ if TRAIN:
                                             validation_steps=50)
 
     # save the model to /models !NAME folder must already exist
-    model.save('models/' + NAME + '_' + LABEL_TYPE)
+    try:
+        os.makedirs(getModelPath())
+    except FileExistsError:
+    # directory already exists
+        pass
+    model.save(getModelPath())
     
     # show trian history
-    visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE)
+    visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + LSTM_SIZE)
 
 else:
     val_data.shuffle(1000)
-    for x, y in val_data.take(1):
+    for x, y in val_data.take(3):
         for i in range(BATCH_SIZE):
             # only take non zero examples
             if y[i] > 0:
                 if LABEL_TYPE == 'kwh':
                     visualizer.plot_prediction_kwh([x[i][:, -2].numpy(), y[i].numpy(),
-                            model.predict(x)[i]], 'Prediction example kwh')
+                            model.predict(x)[i]])
+                if LABEL_TYPE == 'count':
+                    visualizer.plot_prediction_count([x[i][:, -2].numpy(), y[i].numpy(),
+                            model.predict(x)[i]])
                 
                 
                 break
