@@ -55,28 +55,27 @@ def normalizeDatetime(x):
 def getNormWeekOfYear(x):
     return x.weekofyear / 52
 
-def normalizeData():
-    global DATASET
+def normalizeData(dataset):
     print('Normalizing data ...')
     # add week of year
-    DATASET['week_of_year'] = DATASET['time_p'].apply(getNormWeekOfYear)
+    dataset['week_of_year'] = dataset['time_p'].apply(getNormWeekOfYear)
     # normalize times in week 
     for col in DATE_COLUMS:
-        DATASET[col] = DATASET[col].apply(normalizeDatetime)
+        dataset[col] = dataset[col].apply(normalizeDatetime)
 
     # normalize temperature [-20, +40]
-    DATASET['c_temperature'] = DATASET['c_temperature'].apply(normalizeNumber, args=[NORM_RANGE['c_temperature']])
+    dataset['c_temperature'] = dataset['c_temperature'].apply(normalizeNumber, args=[NORM_RANGE['c_temperature']])
 
     # normalize batterysize [0, 100000]
-    DATASET['c_battery_size_max'] = DATASET['c_battery_size_max'].apply(normalizeNumber, args=[NORM_RANGE['c_battery_size_max']])
+    dataset['c_battery_size_max'] = dataset['c_battery_size_max'].apply(normalizeNumber, args=[NORM_RANGE['c_battery_size_max']])
     # normalize kwh & SOC [0, 100]
-    DATASET['soc_p'] = DATASET['soc_p'].apply(normalizeNumber, args=[NORM_RANGE['soc_p']])
-    DATASET['soc_unp'] = DATASET['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']])
-    DATASET['delta_kwh'] = DATASET['delta_kwh'].apply(normalizeNumber, args=[NORM_RANGE['delta_kwh']])
+    dataset['soc_p'] = dataset['soc_p'].apply(normalizeNumber, args=[NORM_RANGE['soc_p']])
+    dataset['soc_unp'] = dataset['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']])
+    dataset['delta_kwh'] = dataset['delta_kwh'].apply(normalizeNumber, args=[NORM_RANGE['delta_kwh']])
 
     # normalize current electric range & delta_km [0, 500]
-    DATASET['c_kombi_current_remaining_range_electric'] = DATASET['c_kombi_current_remaining_range_electric'].apply(normalizeNumber, args=[NORM_RANGE['c_kombi_current_remaining_range_electric']])
-    DATASET['delta_km'] = DATASET['delta_km'].apply(normalizeNumber, args=[NORM_RANGE['delta_km']])
+    dataset['c_kombi_current_remaining_range_electric'] = dataset['c_kombi_current_remaining_range_electric'].apply(normalizeNumber, args=[NORM_RANGE['c_kombi_current_remaining_range_electric']])
+    dataset['delta_km'] = dataset['delta_km'].apply(normalizeNumber, args=[NORM_RANGE['delta_km']])
 
 # sum of loaded kwh plugged after current time
 def getKWHLabel(df, current_time):
@@ -139,8 +138,20 @@ def getValDataset(history, target_time, label_type, step=0):
     global DATASET
     return getTFDataset(DATASET[TRAIN_SPLIT:], history, target_time, label_type, step=step)
 
+def getTestData(timestamp, history, target_time, label_type):
+    global DATASET
+    loadData()
+    data = DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy()
+    normalizeData(DATASET)
+    norm_data = np.array([np.array(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy(), dtype=DTYPE)])
+    label = np.array(getLabel(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp+datetime.timedelta(minutes=target_time)], label_type, timestamp), dtype=DTYPE)
+
+    return data, norm_data, label
+
+
 # inits the data management
 def init():
+    global DATASET
     loadData()
-    normalizeData()
+    normalizeData(DATASET)
 
