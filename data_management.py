@@ -114,16 +114,19 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
 
     while start_date < end_date:
 
-        data.append(np.array(dataset[start_date-datetime.timedelta(minutes=history):start_date], dtype=DTYPE))
+        if len(dataset[start_date-datetime.timedelta(minutes=history):start_date].index) > 1:
 
-        labels.append(np.array(getLabel(dataset[start_date-datetime.timedelta(minutes=history):start_date+datetime.timedelta(minutes=target_time)], lable_type, start_date), dtype=DTYPE))
+            data.append(np.array(dataset[start_date-datetime.timedelta(minutes=history):start_date], dtype=DTYPE))
+
+            labels.append(np.array(getLabel(dataset[start_date-datetime.timedelta(minutes=history):start_date+datetime.timedelta(minutes=target_time)], lable_type, start_date), dtype=DTYPE))
+
+            count+=1
+
+            sys.stdout.write("\r{0} - {1} {2} minute steps labeled -> Label: {3}".format(start_date, count, step, labels[-1]))
+            sys.stdout.flush()
 
         start_date += step
 
-        count+=1
-
-        sys.stdout.write("\r{0} - {1} {2} minute steps labeled -> Label: {3}".format(start_date, count, step, labels[-1]))
-        sys.stdout.flush()
     print('\n')
 
     return np.array(data), np.array(labels)
