@@ -11,7 +11,7 @@ def plot_data(columns, resample_type, resample_intervall='1H'):
     data_management.loadData()
 
     if resample_type == 'kwh':
-      data_management.DATASET = data_management.DATASET[['delta_kwh']].resample(resample_intervall).sum()
+      data_management.DATASET = data_management.DATASET[['delta_kwh']].resample(resample_intervall, label='right', closed='right').sum()
       data_management.DATASET[['delta_kwh']].plot()
       plt.ylabel('kwh charged in ' + resample_intervall)
 
@@ -42,15 +42,20 @@ def plot_train_history(history, title):
 
 def plot_prediction_kwh(data, label, prediction, resample_intervall='1H'):
 
-  data = data[['delta_kwh']].resample(resample_intervall).sum()
+  print(data.tail(10))
 
-  fig, ax = plt.subplots()
+  data = data[['delta_kwh']].resample(resample_intervall, label='right', closed='right').sum()
 
-  data.plot()
+  print(data.tail(5))
 
-  plt.plot(data.index[-1] + datetime.timedelta(minutes=60), data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx', markersize=10,
+  fig=plt.figure()
+  ax=fig.add_subplot(111)
+
+  ax.plot(data[1:])
+
+  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx', markersize=10,
                label='True Future')
-  plt.plot(data.index[-1] + datetime.timedelta(minutes=60), data_management.denormalizeNumber(prediction[0][0], data_management.NORM_RANGE['delta_kwh']), 'go', markersize=10,
+  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), data_management.denormalizeNumber(prediction[0][0], data_management.NORM_RANGE['delta_kwh']), 'go', markersize=10,
                label='Model Prediction')
 
   plt.title('Prediction example kwh')
@@ -80,4 +85,4 @@ def plot_prediction_count(plot_data):
 
 if __name__ == "__main__":
     print('Visualizer started...')
-    plot_data(None, 'count')
+    plot_data(None, 'kwh')

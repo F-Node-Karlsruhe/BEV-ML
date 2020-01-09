@@ -8,20 +8,27 @@ import pandas as pd
 
 import os
 
+# Name of the particular model
 NAME = 'LSTM'
+
+# Train model -> False: Predict the prediction timestamp
+TRAIN = False
+
+# timestamp till which data is given to predict future (year, month, day, hour)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 2, 26, 9)
 
 
 '''
 Training parameters
 '''
 # history length in minutes
-HISTORY_LENGTH = 180
+HISTORY_LENGTH = 180 * 3
 
 # target length in minutes
 TARGET_LENGTH = 60
 
 # label type ['kwh', 'count']
-LABEL_TYPE = 'count'
+LABEL_TYPE = 'kwh'
 
 BATCH_SIZE = 100
 
@@ -31,13 +38,17 @@ EPOCHS = 50
 
 EVALUATION_INTERVAL = 2000
 
+# Size of the LSTM output layer
 LSTM_SIZE = 64
 
+# use a pretained model for training !GPU support not available!
 PRETRAINED = False
 
-TRAIN = True
 
 def getModelPath():
+    '''
+        returns the path for the model containing the model specific parameters
+    '''
     global LSTM_SIZE
     global NAME
     global LABEL_TYPE
@@ -95,12 +106,18 @@ if TRAIN:
     # directory already exists
         pass
     model.save(getModelPath())
+
+    # TODO
+    # loss,acc = model.evaluate(x_val,  test_labels, verbose=2)
+
+    # print("Final model, accuracy: {:5.2f}%".format(100*acc))
+
     
-    # show trian history
+    # show train history
     visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + str(LSTM_SIZE))
 
 else:
-    data, norm_data, label = data_management.getTestData(pd.Timestamp(2018, 6, 6, 12), HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
+    data, norm_data, label = data_management.getTestData(PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
 
     prediction = model.predict(norm_data)
 
