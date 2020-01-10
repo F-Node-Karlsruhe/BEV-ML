@@ -16,12 +16,12 @@ def plot_data(columns, resample_type, intervall=60):
     if resample_type == 'kwh':
       data_management.DATASET = data_management.DATASET[['delta_kwh']].resample(intervall, label='right', closed='right').sum()
       data_management.DATASET[['delta_kwh']].plot()
-      plt.ylabel('kwh charged in ' + intervall + ' minutes')
+      #plt.ylabel('kwh charged in ' + intervall.minutes + ' minutes')
 
     if resample_type == 'count':
       data_management.DATASET = data_management.DATASET[['time_p']].resample(intervall).count()
       data_management.DATASET[['time_p']].plot(legend=None)
-      plt.ylabel('Number of events in ' + intervall + ' minutes')
+      #plt.ylabel('Number of events in ' + intervall + ' minutes')
 
     plt.show()
 
@@ -54,15 +54,14 @@ def plot_prediction_kwh(data, label, prediction, intervall=60):
 
   ax.plot(data[1:])
 
-  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx', markersize=10,
+  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx', markersize=10,
                label='True Future')
-  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), data_management.denormalizeNumber(prediction[0][0], data_management.NORM_RANGE['delta_kwh']), 'go', markersize=10,
+  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(prediction[0][0], data_management.NORM_RANGE['delta_kwh']), 'go', markersize=10,
                label='Model Prediction')
 
   plt.title('Prediction example kwh')
 
   plt.legend()
-  ax.set_ylim(0, 10000)
   plt.xlabel('Time')
   plt.ylabel('kwh')
   plt.show()
@@ -78,15 +77,14 @@ def plot_prediction_count(data, label, prediction, intervall=60):
 
   ax.plot(data[1:])
 
-  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), label, 'rx', markersize=10,
+  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(label, data_management.NORM_RANGE['count']), 'rx', markersize=10,
                label='True Future')
-  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), prediction[0][0], 'go', markersize=10,
+  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(prediction[0][0], data_management.NORM_RANGE['count']), 'go', markersize=10,
                label='Model Prediction')
 
   plt.title('Prediction example count')
 
   plt.legend()
-  ax.set_ylim(0, 10000)
   plt.xlabel('Time')
   plt.ylabel('Number of charges')
   plt.show()

@@ -9,6 +9,7 @@ DTYPE = 'float32'
 # reduce if your RAM is not sufficient
 DATASET_USAGE = 1.0
 
+# train split after resampling
 TRAIN_SPLIT = 0.9
 
 # resample intervall in minutes
@@ -18,12 +19,15 @@ DATE_COLUMS = ['time_p', 'time_unp', 'time_fin']
 
 # RELEVANT_COLUMNS = ['c_battery_size_max', 'c_kombi_current_remaining_range_electric', 'soc_p', 'soc_unp', 'delta_km', 'c_temperature', 'delta_kwh']
 
+# default norm ranges
 NORM_RANGE = {'c_battery_size_max': (0, 100000), 'c_kombi_current_remaining_range_electric': (0, 500), 'soc_p': (0, 100), 'soc_unp': (0, 100), 'delta_km': (0, 500), 'c_temperature': (-20, 40), 'delta_kwh': (0, 100)}
 
+# dat to the prepared dataset
 PATH_PREP = 'data/prep.csv'
 
-DATASET = None
 
+
+DATASET = None
 
 def readPrepData ():
     return pd.read_csv(PATH_PREP, sep=';', parse_dates=DATE_COLUMS)
@@ -72,7 +76,7 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
     norm_data = pd.DataFrame(dataset['time_p'].apply(normalizeDatetime).resample(intervall, label='right', closed='right').min())
 
     # add week of year
-    #dataset['week_of_year'] = dataset['time_p'].apply(getNormWeekOfYear)
+    norm_data['week_of_year'] = dataset['time_p'].apply(getNormWeekOfYear).resample(intervall, label='right', closed='right').mean()
     norm_data['day_of_week'] = dataset['time_p'].apply(getNormDayOfWeek).resample(intervall, label='right', closed='right').mean()
     
     # normalize times in week 
@@ -89,13 +93,19 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
 
         # normalize and resample  SOC [0, 100]
         norm_data['soc_p'] = dataset['soc_p'].apply(normalizeNumber, args=[NORM_RANGE['soc_p']]).resample(intervall, label='right', closed='right').mean()
-        # norm_data['soc_unp'] = dataset['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']]).resample(intervall, label='right', closed='right').mean()
+        norm_data['soc_unp'] = dataset['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']]).resample(intervall, label='right', closed='right').mean()
 
     # normalize and resample delta kwh
     if label_type == 'kwh':
         norm_data['delta_kwh'] = dataset['delta_kwh'].resample(intervall, label='right', closed='right').sum()
         NORM_RANGE['delta_kwh'] = (0, norm_data['delta_kwh'].max())
         norm_data['delta_kwh'] = norm_data['delta_kwh'].apply(normalizeNumber, args=[NORM_RANGE['delta_kwh']])
+    
+    # normalize and resample delta kwh
+    if label_type == 'count':
+        norm_data['count'] = dataset['time_p'].resample(intervall, label='right', closed='right').count()
+        NORM_RANGE['count'] = (0, norm_data['count'].max())
+        norm_data['count'] = norm_data['count'].apply(normalizeNumber, args=[NORM_RANGE['count']])
 
     # fill all nans
     norm_data.fillna(0, inplace=True)
@@ -113,7 +123,7 @@ def getKWHLabel(df, current_time):
 
 # counts the the events in the target time frame
 def getCountLabel(df, current_time):
-    return len(df[current_time:].index)
+    return df[current_time:]['count'].sum()
 
 # returns the label dependent on the selected label type
 def getLabel(df, labelType, current_time):
@@ -175,9 +185,8 @@ def getTestData(timestamp, history, target_time, label_type):
     global DATASET
     loadData()
     data = DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy()
-    DATASET = normalizeData(DATASET, label_type)
-    norm_data = np.array([np.array(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy(), dtype=DTYPE)])
-    label = np.array(getLabel(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp+datetime.timedelta(minutes=target_time)], label_type, timestamp), dtype=DTYPE)
+    norm_data = np.array([np.array(normalizeData(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy(), label_type), dtype=DTYPE)])
+    label = np.array(getLabel(normalizeData(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp+datetime.timedelta(minutes=target_time)], label_type), label_type, timestamp), dtype=DTYPE)
 
     return data, norm_data, label
 
