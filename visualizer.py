@@ -7,18 +7,21 @@ import datetime
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-def plot_data(columns, resample_type, resample_intervall='1H'):
+def plot_data(columns, resample_type, intervall=60):
+
+    intervall = datetime.timedelta(minutes=intervall)
+
     data_management.loadData()
 
     if resample_type == 'kwh':
-      data_management.DATASET = data_management.DATASET[['delta_kwh']].resample(resample_intervall, label='right', closed='right').sum()
+      data_management.DATASET = data_management.DATASET[['delta_kwh']].resample(intervall, label='right', closed='right').sum()
       data_management.DATASET[['delta_kwh']].plot()
-      plt.ylabel('kwh charged in ' + resample_intervall)
+      plt.ylabel('kwh charged in ' + intervall + ' minutes')
 
     if resample_type == 'count':
-      data_management.DATASET = data_management.DATASET[['time_p']].resample(resample_intervall).count()
+      data_management.DATASET = data_management.DATASET[['time_p']].resample(intervall).count()
       data_management.DATASET[['time_p']].plot(legend=None)
-      plt.ylabel('Number of events in ' + resample_intervall)
+      plt.ylabel('Number of events in ' + intervall + ' minutes')
 
     plt.show()
 
@@ -34,19 +37,17 @@ def plot_train_history(history, title):
     plt.plot(epochs, loss, 'b', label='Training loss')
     plt.plot(epochs, val_loss, 'r', label='Validation loss')
     plt.title(title)
-    plt.ylabel('error')
-    plt.ylabel('epochs')
+    plt.ylabel('mse')
+    plt.xlabel('epochs')
     plt.legend()
 
     plt.show()
 
-def plot_prediction_kwh(data, label, prediction, resample_intervall='1H'):
+def plot_prediction_kwh(data, label, prediction, intervall=60):
 
-  print(data.tail(10))
+  intervall = datetime.timedelta(minutes=intervall)
 
-  data = data[['delta_kwh']].resample(resample_intervall, label='right', closed='right').sum()
-
-  print(data.tail(5))
+  data = data[['delta_kwh']].resample(intervall, label='right', closed='right').sum()
 
   fig=plt.figure()
   ax=fig.add_subplot(111)
@@ -61,26 +62,33 @@ def plot_prediction_kwh(data, label, prediction, resample_intervall='1H'):
   plt.title('Prediction example kwh')
 
   plt.legend()
-  #plt.yscale('log')
+  ax.set_ylim(0, 10000)
   plt.xlabel('Time')
   plt.ylabel('kwh')
   plt.show()
 
-def plot_prediction_count(plot_data):
-  labels = ['History', 'True Future', 'Model Prediction']
-  marker = ['.-', 'rx', 'go']
+def plot_prediction_count(data, label, prediction, intervall=60):
 
+  intervall = datetime.timedelta(minutes=intervall)
+
+  data = data[['time_p']].resample(intervall, label='right', closed='right').count()
+
+  fig=plt.figure()
+  ax=fig.add_subplot(111)
+
+  ax.plot(data[1:])
+
+  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), label, 'rx', markersize=10,
+               label='True Future')
+  ax.plot(data.index[-1] + datetime.timedelta(minutes=60), prediction[0][0], 'go', markersize=10,
+               label='Model Prediction')
 
   plt.title('Prediction example count')
-  for i, x in enumerate(plot_data):
-    if i:
-      plt.plot([len(plot_data[0])+1], plot_data[i], marker[i], markersize=10,
-               label=labels[i])
-    else:
-      plt.plot(plot_data[i].flatten(), marker[i], label=labels[i])
+
   plt.legend()
-  #plt.yscale('log')
-  plt.xlabel('Time-Step')
+  ax.set_ylim(0, 10000)
+  plt.xlabel('Time')
+  plt.ylabel('Number of charges')
   plt.show()
 
 if __name__ == "__main__":

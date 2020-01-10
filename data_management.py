@@ -11,11 +11,14 @@ DATASET_USAGE = 1.0
 
 TRAIN_SPLIT = 0.9
 
+# resample intervall in minutes
+RESAMPLE_INTERVALL = 60
+
 DATE_COLUMS = ['time_p', 'time_unp', 'time_fin']
 
 # RELEVANT_COLUMNS = ['c_battery_size_max', 'c_kombi_current_remaining_range_electric', 'soc_p', 'soc_unp', 'delta_km', 'c_temperature', 'delta_kwh']
 
-NORM_RANGE = {'c_battery_size_max': (0, 100000), 'c_kombi_current_remaining_range_electric': (0, 500), 'soc_p': (0, 100), 'soc_unp': (0, 100), 'delta_km': (0, 500), 'c_temperature': (-20, 40), 'delta_kwh': (0, 1000)}
+NORM_RANGE = {'c_battery_size_max': (0, 100000), 'c_kombi_current_remaining_range_electric': (0, 500), 'soc_p': (0, 100), 'soc_unp': (0, 100), 'delta_km': (0, 500), 'c_temperature': (-20, 40), 'delta_kwh': (0, 100)}
 
 PATH_PREP = 'data/prep.csv'
 
@@ -37,8 +40,6 @@ def loadData():
     # reduce dataset if neccessary
     if DATASET_USAGE < 1.0:
         DATASET = DATASET[:int(len(DATASET.index) * DATASET_USAGE)]
-    # determine effective size of train split
-    TRAIN_SPLIT = int(len(DATASET.index) * TRAIN_SPLIT)
 
 # normalized a given number in a given range to [0, 1]
 def normalizeNumber(x, bounds):
@@ -50,32 +51,61 @@ def denormalizeNumber(x, bounds):
     return bounds[0] + x * space
 
 def normalizeDatetime(x):
-    return ( x.weekday() * 24 * 60 + x.hour * 60 + x.minute ) / 7 / 24 / 60  # normalize on minutely bases
+    return ( x.hour * 60 + x.minute ) / 24 / 60  # normalize daytime on minutely bases
 
 def getNormWeekOfYear(x):
     return x.weekofyear / 52
 
-def normalizeData(dataset):
-    print('Normalizing data ...')
+def getNormDayOfWeek(x):
+    return x.dayofweek / 7
+
+def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
+
+    intervall = datetime.timedelta(minutes=intervall)
+
+    global NORM_RANGE
+
+    global TRAIN_SPLIT
+
+    print('Resample and normalize data ...')
+    # init nor data with time
+    norm_data = pd.DataFrame(dataset['time_p'].apply(normalizeDatetime).resample(intervall, label='right', closed='right').min())
+
     # add week of year
-    dataset['week_of_year'] = dataset['time_p'].apply(getNormWeekOfYear)
+    #dataset['week_of_year'] = dataset['time_p'].apply(getNormWeekOfYear)
+    norm_data['day_of_week'] = dataset['time_p'].apply(getNormDayOfWeek).resample(intervall, label='right', closed='right').mean()
+    
     # normalize times in week 
-    for col in DATE_COLUMS:
-        dataset[col] = dataset[col].apply(normalizeDatetime)
+    # for col in DATE_COLUMS:
+        # dataset[col] = dataset[col].apply(normalizeDatetime)
+    if label_type == 'kwh':
+        # normalize and resample temperature [-20, +40]
+        norm_data['c_temperature'] = dataset['c_temperature'].apply(normalizeNumber, args=[NORM_RANGE['c_temperature']]).resample(intervall, label='right', closed='right').mean()
 
-    # normalize temperature [-20, +40]
-    dataset['c_temperature'] = dataset['c_temperature'].apply(normalizeNumber, args=[NORM_RANGE['c_temperature']])
+        # normalize and resample batterysize [0, 100000]
+        norm_data['c_battery_size_max'] = dataset['c_battery_size_max'].resample(intervall, label='right', closed='right').sum()
+        NORM_RANGE['c_battery_size_max'] = (0, norm_data['c_battery_size_max'].max())
+        norm_data['c_battery_size_max'] = norm_data['c_battery_size_max'].apply(normalizeNumber, args=[NORM_RANGE['c_battery_size_max']])
 
-    # normalize batterysize [0, 100000]
-    dataset['c_battery_size_max'] = dataset['c_battery_size_max'].apply(normalizeNumber, args=[NORM_RANGE['c_battery_size_max']])
-    # normalize kwh & SOC [0, 100]
-    dataset['soc_p'] = dataset['soc_p'].apply(normalizeNumber, args=[NORM_RANGE['soc_p']])
-    dataset['soc_unp'] = dataset['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']])
-    dataset['delta_kwh'] = dataset['delta_kwh'].apply(normalizeNumber, args=[NORM_RANGE['delta_kwh']])
+        # normalize and resample  SOC [0, 100]
+        norm_data['soc_p'] = dataset['soc_p'].apply(normalizeNumber, args=[NORM_RANGE['soc_p']]).resample(intervall, label='right', closed='right').mean()
+        # norm_data['soc_unp'] = dataset['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']]).resample(intervall, label='right', closed='right').mean()
 
-    # normalize current electric range & delta_km [0, 500]
-    dataset['c_kombi_current_remaining_range_electric'] = dataset['c_kombi_current_remaining_range_electric'].apply(normalizeNumber, args=[NORM_RANGE['c_kombi_current_remaining_range_electric']])
-    dataset['delta_km'] = dataset['delta_km'].apply(normalizeNumber, args=[NORM_RANGE['delta_km']])
+    # normalize and resample delta kwh
+    if label_type == 'kwh':
+        norm_data['delta_kwh'] = dataset['delta_kwh'].resample(intervall, label='right', closed='right').sum()
+        NORM_RANGE['delta_kwh'] = (0, norm_data['delta_kwh'].max())
+        norm_data['delta_kwh'] = norm_data['delta_kwh'].apply(normalizeNumber, args=[NORM_RANGE['delta_kwh']])
+
+    # fill all nans
+    norm_data.fillna(0, inplace=True)
+
+    # adjust train split
+    TRAIN_SPLIT = int(len(norm_data.index) * TRAIN_SPLIT)
+
+    return norm_data
+
+
 
 # sum of loaded kwh plugged after current time
 def getKWHLabel(df, current_time):
@@ -102,7 +132,7 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
     end_date = dataset.index[-1] - datetime.timedelta(minutes=target_time)
 
     if step == 0:
-        step = int(history / 6) # set auto step on 1/6 of the history size
+        step = int(history / 7) # set auto step on 1/7 of the history size
         if step == 0:
             step = 1            # at least 1
     
@@ -114,7 +144,7 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
 
     while start_date < end_date:
 
-        if len(dataset[start_date-datetime.timedelta(minutes=history):start_date].index) > 1:
+        if len(dataset[start_date-datetime.timedelta(minutes=history):start_date].index) > 0:
 
             data.append(np.array(dataset[start_date-datetime.timedelta(minutes=history):start_date], dtype=DTYPE))
 
@@ -145,7 +175,7 @@ def getTestData(timestamp, history, target_time, label_type):
     global DATASET
     loadData()
     data = DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy()
-    normalizeData(DATASET)
+    DATASET = normalizeData(DATASET, label_type)
     norm_data = np.array([np.array(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy(), dtype=DTYPE)])
     label = np.array(getLabel(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp+datetime.timedelta(minutes=target_time)], label_type, timestamp), dtype=DTYPE)
 
@@ -153,8 +183,8 @@ def getTestData(timestamp, history, target_time, label_type):
 
 
 # inits the data management
-def init():
+def init(label_type):
     global DATASET
     loadData()
-    normalizeData(DATASET)
+    DATASET = normalizeData(DATASET, label_type)
 

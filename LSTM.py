@@ -11,18 +11,21 @@ import os
 # Name of the particular model
 NAME = 'LSTM'
 
+'''
+Prediction settings
+'''
 # Train model -> False: Predict the prediction timestamp
 TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 2, 26, 9)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 4, 26, 3)
 
 
 '''
 Training parameters
 '''
 # history length in minutes
-HISTORY_LENGTH = 180 * 3
+HISTORY_LENGTH = 180
 
 # target length in minutes
 TARGET_LENGTH = 60
@@ -34,15 +37,17 @@ BATCH_SIZE = 100
 
 BUFFER_SIZE = 10000
 
-EPOCHS = 50
+EPOCHS = 10
 
-EVALUATION_INTERVAL = 2000
+EVALUATION_INTERVAL = 1000
 
 # Size of the LSTM output layer
-LSTM_SIZE = 64
+LSTM_SIZE = 32
 
 # use a pretained model for training !GPU support not available!
 PRETRAINED = False
+
+EVALUATE = False
 
 
 def getModelPath():
@@ -67,7 +72,7 @@ model = None
 
 if TRAIN:
     # init datamanagement
-    data_management.init()
+    data_management.init(LABEL_TYPE)
 
     # get dataset
     x_train, y_train = data_management.getTrainDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
@@ -85,13 +90,19 @@ if TRAIN:
 
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.LSTM(LSTM_SIZE, input_shape=(None, x_train.shape[-1])))
+    model.add(tf.keras.layers.Dense(256, activation='relu'))
     model.add(tf.keras.layers.Dense(1))
 
-    model.compile(optimizer='adam', loss='mae')
+    model.compile(optimizer='adam', loss='mse')
 
 # load already existing model
 if PRETRAINED or not TRAIN:
     model = tf.keras.models.load_model(getModelPath())
+
+if EVALUATE:
+    loss,acc = model.evaluate(x_val, y_val, batch_size=100)
+
+    print("Final model, accuracy: {:5.2f}%".format(100*acc))
 
 if TRAIN:
     history = model.fit(train_data, epochs=EPOCHS,
@@ -107,11 +118,6 @@ if TRAIN:
         pass
     model.save(getModelPath())
 
-    # TODO
-    # loss,acc = model.evaluate(x_val,  test_labels, verbose=2)
-
-    # print("Final model, accuracy: {:5.2f}%".format(100*acc))
-
     
     # show train history
     visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + str(LSTM_SIZE))
@@ -121,5 +127,11 @@ else:
 
     prediction = model.predict(norm_data)
 
+    print('Prediction: ', prediction)
+
+    print('Label: ', label)
+
     if LABEL_TYPE == 'kwh':
-        visualizer.plot_prediction_kwh(data, label, prediction)
+        visualizer.plot_prediction_kwh(data, label, prediction, intervall=TARGET_LENGTH)
+    if LABEL_TYPE == 'count':
+        visualizer.plot_prediction_count(data, label, prediction, intervall=TARGET_LENGTH)
