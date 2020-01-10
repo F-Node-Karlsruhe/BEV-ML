@@ -15,7 +15,7 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = False
+TRAIN = True
 
 # timestamp till which data is given to predict future (year, month, day, hour)
 PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 16)
@@ -47,7 +47,7 @@ BATCH_SIZE = 100
 
 BUFFER_SIZE = 10000
 
-# Size of the LSTM output layer
+# size of the LSTM output layer
 LSTM_SIZE = 128
 
 # size of the fully connected layer after the LSTM
@@ -61,9 +61,6 @@ def getModelPath():
     '''
         returns the path for the model containing the model specific parameters
     '''
-    global LSTM_SIZE
-    global NAME
-    global LABEL_TYPE
     return 'models/' + NAME + '_' + LABEL_TYPE + '_' + str(LSTM_SIZE)
 
 
@@ -84,10 +81,6 @@ if TRAIN:
     # get dataset
     x_train, y_train = data_management.getTrainDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
     x_val, y_val = data_management.getValDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
-
-    # padd the sequences
-    x_train = tf.keras.preprocessing.sequence.pad_sequences(x_train, dtype='float32')
-    x_val = tf.keras.preprocessing.sequence.pad_sequences(x_val, dtype='float32')   
 
     train_data = tf.data.Dataset.from_tensor_slices((x_train, y_train))
     train_data = train_data.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE).repeat()
@@ -119,7 +112,6 @@ if TRAIN:
     # directory already exists
         pass
     model.save(getModelPath())
-
     
     # show train history
     visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + str(LSTM_SIZE))
@@ -138,6 +130,3 @@ else:
     if LABEL_TYPE == 'count':
         visualizer.plot_prediction_count(data, label, prediction, intervall=TARGET_LENGTH)
 
-    #loss,acc = model.evaluate(x_val, y_val, batch_size=100)
-
-    #print("Final model, accuracy: {:5.2f}%".format(100*acc))
