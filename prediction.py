@@ -10,7 +10,7 @@ import visualizer
 Prediciton parameters
 '''
 # timestamp till which data is given to predict future (year, month, day, hour, minute)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 16)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 19)
 
 '''
 Model parameters
@@ -25,7 +25,7 @@ LABEL_TYPE = 'kwh'
 CELL_SIZE = 128
 
 # history length in minutes
-HISTORY_LENGTH = 60 * 3
+HISTORY_LENGTH = 60 * 24
 
 # target length in minutes
 TARGET_LENGTH = 60

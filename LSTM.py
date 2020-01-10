@@ -34,7 +34,7 @@ TARGET_LENGTH = 60
 STEP_SIZE = 60
 
 # label type: ['kwh', 'count']
-LABEL_TYPE = 'count'
+LABEL_TYPE = 'kwh'
 
 # number of epochs for each training
 EPOCHS = 10
