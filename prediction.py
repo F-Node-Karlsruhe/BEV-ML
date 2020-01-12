@@ -10,7 +10,7 @@ import visualizer
 Prediciton parameters
 '''
 # timestamp till which data is given to predict future (year, month, day, hour, minute)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 19)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 6)
 
 '''
 Model parameters
@@ -22,19 +22,22 @@ NAME = 'LSTM'
 LABEL_TYPE = 'kwh'
 
 # size of the memory cell output layer
-CELL_SIZE = 128
+CELL_SIZE = 256
 
 # history length in minutes
 HISTORY_LENGTH = 60 * 24
 
-# target length in minutes
-TARGET_LENGTH = 60
+# target length in steps
+TARGET_LENGTH = 1
+
+# step size in minutes -> 0 for auto
+STEP_SIZE = 60
 
 def getModelPath():
     '''
         returns the path for the model containing the model specific parameters
     '''
-    return 'models/' + NAME + '_' + LABEL_TYPE + '_' + str(CELL_SIZE)
+    return 'models/' + NAME + '_' + str(CELL_SIZE) + '_label_' + LABEL_TYPE + '_target_' + str(TARGET_LENGTH)
 
 
 # enable gpu processing on windows10
@@ -44,18 +47,18 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 # try to load the specific model
 model = tf.keras.models.load_model(getModelPath())
 
-data, norm_data, label = data_management.getTestData(PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
+data, norm_data, label = data_management.getTestData(PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
 
 prediction = model.predict(norm_data)
 
-print('Prediction: ', prediction[0][0])
+print('Prediction: ', prediction[0])
 
 print('True value: ', label)
 
 if LABEL_TYPE == 'kwh':
-    visualizer.plot_prediction_kwh(data, label, prediction, intervall=TARGET_LENGTH)
+    visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE)
 if LABEL_TYPE == 'count':
-    visualizer.plot_prediction_count(data, label, prediction, intervall=TARGET_LENGTH)
+    visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE)
 
 #loss,acc = model.evaluate(x_val, y_val, batch_size=100)
 

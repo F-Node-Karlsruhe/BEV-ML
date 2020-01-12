@@ -15,7 +15,7 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = True
+TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
 PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 16)
@@ -27,10 +27,10 @@ Training parameters
 # history length in minutes
 HISTORY_LENGTH = 60 * 24
 
-# target length in minutes
-TARGET_LENGTH = 60
+# target length in steps
+TARGET_LENGTH = 3
 
-# step size in minutes -> 0 for auto
+# step size in minutes
 STEP_SIZE = 60
 
 # label type: ['kwh', 'count']
@@ -51,7 +51,7 @@ BUFFER_SIZE = 10000
 LSTM_SIZE = 128
 
 # size of the fully connected layer after the LSTM
-FULLY_CONNECTED_LAYER_SIZE = 256
+FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
 
 # use a pretained model for training !GPU streamlining not optimal when model loaded!
 PRETRAINED = False
@@ -61,7 +61,7 @@ def getModelPath():
     '''
         returns the path for the model containing the model specific parameters
     '''
-    return 'models/' + NAME + '_' + LABEL_TYPE + '_' + str(LSTM_SIZE)
+    return 'models/' + NAME + '_' + str(LSTM_SIZE) + '_label_' + LABEL_TYPE + '_target_' + str(TARGET_LENGTH)
 
 
 
@@ -76,7 +76,7 @@ model = None
 
 if TRAIN:
     # init datamanagement
-    data_management.init(LABEL_TYPE)
+    data_management.init(LABEL_TYPE, STEP_SIZE)
 
     # get dataset
     x_train, y_train = data_management.getTrainDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
@@ -91,7 +91,7 @@ if TRAIN:
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.LSTM(LSTM_SIZE, input_shape=(None, x_train.shape[-1])))
     model.add(tf.keras.layers.Dense(FULLY_CONNECTED_LAYER_SIZE, activation='relu'))
-    model.add(tf.keras.layers.Dense(1))
+    model.add(tf.keras.layers.Dense(TARGET_LENGTH))
 
     model.compile(optimizer='adam', loss='mse')
 
@@ -103,9 +103,9 @@ if TRAIN:
     history = model.fit(train_data, epochs=EPOCHS,
                                             steps_per_epoch=EVALUATION_INTERVAL,
                                             validation_data=val_data,
-                                            validation_steps=50)
+                                            validation_steps=500)
 
-    # save the model to /models !NAME folder must already exist
+    # save the model to /models
     try:
         os.makedirs(getModelPath())
     except FileExistsError:
@@ -117,16 +117,16 @@ if TRAIN:
     visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + str(LSTM_SIZE))
 
 else:
-    data, norm_data, label = data_management.getTestData(PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE)
+    data, norm_data, label = data_management.getTestData(PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
 
     prediction = model.predict(norm_data)
 
-    print('Prediction: ', prediction[0][0])
+    print('Prediction: ', prediction[0])
 
     print('True value: ', label)
 
     if LABEL_TYPE == 'kwh':
-        visualizer.plot_prediction_kwh(data, label, prediction, intervall=TARGET_LENGTH)
+        visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE)
     if LABEL_TYPE == 'count':
-        visualizer.plot_prediction_count(data, label, prediction, intervall=TARGET_LENGTH)
+        visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE)
 

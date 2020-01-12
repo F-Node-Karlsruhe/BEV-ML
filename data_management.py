@@ -118,33 +118,35 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
 
 
 # sum of loaded kwh plugged after current time
-def getKWHLabel(df, current_time):
+def getKWHLabel(df):
     return df['delta_kwh'].sum()
 
 # counts the the events in the target time frame
-def getCountLabel(df, current_time):
+def getCountLabel(df):
     return df['count'].sum()
 
 # returns the label dependent on the selected label type
-def getLabel(df, labelType, current_time):
-    # current_time = normalizeDatetime(current_time)
-    if labelType == 'kwh':
-        return getKWHLabel(df, current_time)
-    if labelType == 'count':
-        return getCountLabel(df, current_time)
-    return 0
+def getLabel(df, labelType, current_time, target, step):
+    label = []
+    relevant_time = current_time + datetime.timedelta(seconds=1)
+    for t in range(target):
 
-def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
+        if labelType == 'kwh':
+            label.append(getKWHLabel(df[relevant_time + t * step: relevant_time + (t+1) * step]))
+        if labelType == 'count':
+            label.append(getCountLabel(df[relevant_time + t * step: relevant_time + (t+1) * step]))
+
+    return label
+
+def getTFDataset(dataset, history, target, lable_type, step=0 ):
     data = []
     labels = []
 
     start_date = dataset.index[0] + datetime.timedelta(minutes=history)
-    end_date = dataset.index[-1] - datetime.timedelta(minutes=target_time)
+    end_date = dataset.index[-1] - datetime.timedelta(minutes=target*step)
 
     if step == 0:
-        step = int(history / 7) # set auto step on 1/7 of the history size
-        if step == 0:
-            step = 1            # at least 1
+        step = datetime.timedelta(minutes=RESAMPLE_INTERVALL)
     
     step = datetime.timedelta(minutes=step)
 
@@ -156,7 +158,7 @@ def getTFDataset(dataset, history, target_time, lable_type, step=0 ):
 
         data.append(np.array(dataset[start_date-datetime.timedelta(minutes=history):start_date], dtype=DTYPE))
 
-        labels.append(np.array(getLabel(dataset[start_date+datetime.timedelta(seconds=1):start_date+datetime.timedelta(minutes=target_time)], lable_type, start_date), dtype=DTYPE))
+        labels.append(np.array(getLabel(dataset[start_date:start_date+step*target], lable_type, start_date, target, step), dtype=DTYPE))
 
         count+=1
 
@@ -179,20 +181,20 @@ def getValDataset(history, target_time, label_type, step=0):
     global DATASET
     return getTFDataset(DATASET[TRAIN_SPLIT:], history, target_time, label_type, step=step)
 
-def getTestData(timestamp, history, target_time, label_type):
+def getTestData(timestamp, history, target, label_type, step):
     global DATASET
     loadData()
     data = DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy()
-    DATASET = normalizeData(DATASET, label_type)
+    DATASET = normalizeData(DATASET, label_type, step)
     norm_data = np.array([np.array(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy(), dtype=DTYPE)])
-    label = np.array(getLabel(DATASET[timestamp+datetime.timedelta(seconds=1):timestamp+datetime.timedelta(minutes=target_time)], label_type, timestamp), dtype=DTYPE)
+    label = np.array(getLabel(DATASET[timestamp:timestamp+datetime.timedelta(minutes=target*step)], label_type, timestamp, target, datetime.timedelta(minutes=step)), dtype=DTYPE)
 
     return data, norm_data, label
 
 
 # inits the data management
-def init(label_type):
+def init(label_type, resample_intervall=RESAMPLE_INTERVALL):
     global DATASET
     loadData()
-    DATASET = normalizeData(DATASET, label_type)
+    DATASET = normalizeData(DATASET, label_type, RESAMPLE_INTERVALL)
 
