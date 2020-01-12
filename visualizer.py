@@ -56,9 +56,9 @@ def plot_prediction_kwh(data, label, prediction, intervall=60, target=1):
 
   target_times = [data.index[-1] + intervall * x for x in range(1, target+1)]
  
-  ax.plot(target_times, data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx', markersize=10,
+  ax.plot(target_times, data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx-', markersize=10,
                label='True Future')
-  ax.plot(target_times, data_management.denormalizeNumber(prediction[0], data_management.NORM_RANGE['delta_kwh']), 'go', markersize=10,
+  ax.plot(target_times, data_management.denormalizeNumber(prediction[0], data_management.NORM_RANGE['delta_kwh']), 'go-', markersize=10,
                label='Model Prediction')
 
   plt.title('Prediction example kwh')

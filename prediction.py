@@ -28,7 +28,7 @@ CELL_SIZE = 256
 HISTORY_LENGTH = 60 * 24
 
 # target length in steps
-TARGET_LENGTH = 1
+TARGET_LENGTH = 3
 
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
@@ -56,9 +56,9 @@ print('Prediction: ', prediction[0])
 print('True value: ', label)
 
 if LABEL_TYPE == 'kwh':
-    visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE)
+    visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
 if LABEL_TYPE == 'count':
-    visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE)
+    visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
 
 #loss,acc = model.evaluate(x_val, y_val, batch_size=100)
 

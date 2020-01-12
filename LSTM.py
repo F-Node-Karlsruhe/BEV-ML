@@ -18,23 +18,23 @@ Prediction settings
 TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 19)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 9)
 
 
 '''
 Training parameters
 '''
-# history length in minutes
-HISTORY_LENGTH = 60 * 24
-
 # target length in steps
-TARGET_LENGTH = 3
+TARGET_LENGTH = 8
 
 # step size in minutes
 STEP_SIZE = 60
 
+# history length 
+HISTORY_LENGTH = STEP_SIZE * 24
+
 # label type: ['kwh', 'count']
-LABEL_TYPE = 'count'
+LABEL_TYPE = 'kwh'
 
 # number of epochs for each training
 EPOCHS = 10
@@ -48,7 +48,7 @@ BATCH_SIZE = 100
 BUFFER_SIZE = 10000
 
 # size of the LSTM output layer
-LSTM_SIZE = 256
+LSTM_SIZE = 512
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
@@ -61,7 +61,7 @@ def getModelPath():
     '''
         returns the path for the model containing the model specific parameters
     '''
-    return 'models/' + NAME + '_' + str(LSTM_SIZE) + '_label_' + LABEL_TYPE + '_target_' + str(TARGET_LENGTH)
+    return 'models/' + NAME + '_' + str(LSTM_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE)
 
 
 
@@ -103,7 +103,7 @@ if TRAIN:
     history = model.fit(train_data, epochs=EPOCHS,
                                             steps_per_epoch=EVALUATION_INTERVAL,
                                             validation_data=val_data,
-                                            validation_steps=500)
+                                            validation_steps=50)
 
     # save the model to /models
     try:
