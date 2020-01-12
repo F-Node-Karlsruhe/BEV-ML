@@ -162,7 +162,7 @@ def getTFDataset(dataset, history, target, lable_type, step=0 ):
 
         count+=1
 
-        sys.stdout.write("\r{0} - {1} {2} minute steps labeled -> Label: {3}".format(start_date, count, step, labels[-1]))
+        sys.stdout.write("\r{0} - {1} {2} minute steps labeled -> Label: {3}".format(start_date, count, step, labels[-1][0]))
         sys.stdout.flush()
 
         start_date += step
@@ -196,5 +196,5 @@ def getTestData(timestamp, history, target, label_type, step):
 def init(label_type, resample_intervall=RESAMPLE_INTERVALL):
     global DATASET
     loadData()
-    DATASET = normalizeData(DATASET, label_type, RESAMPLE_INTERVALL)
+    DATASET = normalizeData(DATASET, label_type, resample_intervall)
 
