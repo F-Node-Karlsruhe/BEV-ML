@@ -43,7 +43,7 @@ def plot_train_history(history, title):
 
     plt.show()
 
-def plot_prediction_kwh(data, label, prediction, intervall=60):
+def plot_prediction_kwh(data, label, prediction, intervall=60, target=1):
 
   intervall = datetime.timedelta(minutes=intervall)
 
@@ -54,9 +54,11 @@ def plot_prediction_kwh(data, label, prediction, intervall=60):
 
   ax.plot(data[1:])
 
-  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx', markersize=10,
+  target_times = [data.index[-1] + intervall * x for x in range(1, target+1)]
+ 
+  ax.plot(target_times, data_management.denormalizeNumber(label, data_management.NORM_RANGE['delta_kwh']), 'rx', markersize=10,
                label='True Future')
-  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(prediction[0][0], data_management.NORM_RANGE['delta_kwh']), 'go', markersize=10,
+  ax.plot(target_times, data_management.denormalizeNumber(prediction[0], data_management.NORM_RANGE['delta_kwh']), 'go', markersize=10,
                label='Model Prediction')
 
   plt.title('Prediction example kwh')
@@ -66,7 +68,7 @@ def plot_prediction_kwh(data, label, prediction, intervall=60):
   plt.ylabel('kwh')
   plt.show()
 
-def plot_prediction_count(data, label, prediction, intervall=60):
+def plot_prediction_count(data, label, prediction, intervall=60, target=1):
 
   intervall = datetime.timedelta(minutes=intervall)
 
@@ -77,9 +79,11 @@ def plot_prediction_count(data, label, prediction, intervall=60):
 
   ax.plot(data[1:])
 
-  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(label, data_management.NORM_RANGE['count']), 'rx', markersize=10,
+  target_times = [data.index[-1] + intervall * x for x in range(1, target+1)]
+
+  ax.plot(target_times, data_management.denormalizeNumber(label, data_management.NORM_RANGE['count']), 'rx', markersize=10,
                label='True Future')
-  ax.plot(data.index[-1] + intervall, data_management.denormalizeNumber(prediction[0][0], data_management.NORM_RANGE['count']), 'go', markersize=10,
+  ax.plot(target_times, data_management.denormalizeNumber(prediction[0], data_management.NORM_RANGE['count']), 'go', markersize=10,
                label='Model Prediction')
 
   plt.title('Prediction example count')
