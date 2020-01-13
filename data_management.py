@@ -45,6 +45,10 @@ def loadData():
     if DATASET_USAGE < 1.0:
         DATASET = DATASET[:int(len(DATASET.index) * DATASET_USAGE)]
 
+def filterPLZ(dataset, PLZ):
+    dataset['PLZ'] = dataset['PLZ'].astype(str)
+    return dataset[dataset['PLZ'].str[0:len(PLZ)] == PLZ]
+
 # normalized a given number in a given range to [0, 1]
 def normalizeNumber(x, bounds):
     space = bounds[1] - bounds[0]
@@ -181,9 +185,11 @@ def getValDataset(history, target_time, label_type, step=0):
     global DATASET
     return getTFDataset(DATASET[TRAIN_SPLIT:], history, target_time, label_type, step=step)
 
-def getTestData(timestamp, history, target, label_type, step):
+def getTestData(timestamp, history, target, label_type, step, PLZ=None):
     global DATASET
     loadData()
+    if PLZ != None:
+        DATASET = filterPLZ(DATASET, PLZ)
     data = DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy()
     DATASET = normalizeData(DATASET, label_type, step)
     norm_data = np.array([np.array(DATASET[timestamp-datetime.timedelta(minutes=history):timestamp].copy(), dtype=DTYPE)])

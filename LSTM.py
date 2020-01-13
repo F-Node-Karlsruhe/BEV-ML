@@ -18,7 +18,7 @@ Prediction settings
 TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 9)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 2)
 
 
 '''
