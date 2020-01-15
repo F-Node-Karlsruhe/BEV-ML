@@ -10,10 +10,10 @@ import visualizer
 Prediciton parameters
 '''
 # timestamp till which data is given to predict future (year, month, day, hour, minute)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 6)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 6, 3, 15)
 
 # PLZ prediciton
-PLZ = None#'7'
+PLZ = None #'5'
 
 '''
 Model parameters

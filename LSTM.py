@@ -15,7 +15,7 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = False
+TRAIN = True
 
 # timestamp till which data is given to predict future (year, month, day, hour)
 PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 2)
@@ -37,7 +37,7 @@ HISTORY_LENGTH = STEP_SIZE * 24
 LABEL_TYPE = 'kwh'
 
 # number of epochs for each training
-EPOCHS = 10
+EPOCHS = 20
 
 # number of steps in each epoch
 EVALUATION_INTERVAL = 1000
@@ -48,7 +48,7 @@ BATCH_SIZE = 100
 BUFFER_SIZE = 10000
 
 # size of the LSTM output layer
-LSTM_SIZE = 512
+LSTM_SIZE = 1024
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
@@ -61,8 +61,24 @@ def getModelPath():
     '''
         returns the path for the model containing the model specific parameters
     '''
-    return 'models/' + NAME + '_' + str(LSTM_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE)
+    return os.path.join(
+    'models',
+    NAME + '_' + str(LSTM_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE))
 
+
+def getCallbacks():
+    log_dir=getModelPath() #+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return [
+    tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10),
+    tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    ]
+
+# create model specific directory if neccesary
+try:
+    os.makedirs(getModelPath())
+except FileExistsError:
+# directory already exists
+    pass
 
 
 # optional: set seed for reproducability
@@ -90,7 +106,9 @@ if TRAIN:
 
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.LSTM(LSTM_SIZE, input_shape=(None, x_train.shape[-1])))
+    model.add(tf.keras.layers.Dropout(0.5))
     model.add(tf.keras.layers.Dense(FULLY_CONNECTED_LAYER_SIZE, activation='relu'))
+    model.add(tf.keras.layers.Dropout(0.5))
     model.add(tf.keras.layers.Dense(TARGET_LENGTH))
 
     model.compile(optimizer='adam', loss='mse')
@@ -103,14 +121,9 @@ if TRAIN:
     history = model.fit(train_data, epochs=EPOCHS,
                                             steps_per_epoch=EVALUATION_INTERVAL,
                                             validation_data=val_data,
-                                            validation_steps=50)
-
-    # save the model to /models
-    try:
-        os.makedirs(getModelPath())
-    except FileExistsError:
-    # directory already exists
-        pass
+                                            validation_steps=50,
+                                            callbacks=getCallbacks())
+    # save model
     model.save(getModelPath())
     
     # show train history
