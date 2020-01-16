@@ -166,7 +166,7 @@ def getTFDataset(dataset, history, target, lable_type, step=0 ):
 
         count+=1
 
-        sys.stdout.write("\r{0} - {1} {2} minute steps labeled -> Label: {3}".format(start_date, count, step, labels[-1][0]))
+        sys.stdout.write("\r{0} - {1} {2} time steps labeled -> Label: {3}".format(start_date, count, step, labels[-1][0]))
         sys.stdout.flush()
 
         start_date += step

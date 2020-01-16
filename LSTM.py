@@ -15,40 +15,43 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = True
+TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 3, 2)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 6, 6)
 
 
 '''
 Training parameters
 '''
-# target length in steps
-TARGET_LENGTH = 8
-
 # step size in minutes
-STEP_SIZE = 60
+STEP_SIZE = 30
 
-# history length 
-HISTORY_LENGTH = STEP_SIZE * 24
+# target length in steps in hours
+TARGET_LENGTH = int(60/STEP_SIZE) * 4
+
+# history length in hours
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
 
 # label type: ['kwh', 'count']
 LABEL_TYPE = 'kwh'
 
 # number of epochs for each training
-EPOCHS = 20
-
-# number of steps in each epoch
-EVALUATION_INTERVAL = 1000
+EPOCHS = 100
 
 # batch size for each step
 BATCH_SIZE = 100
 
+# number of steps in each epoch -> 0 = auto
+EVALUATION_INTERVAL = 0
+
 BUFFER_SIZE = 10000
 
+'''
+Model parameters
+'''
 # size of the LSTM output layer
-LSTM_SIZE = 1024
+LSTM_SIZE = 2048
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
@@ -69,7 +72,7 @@ def getModelPath():
 def getCallbacks():
     log_dir=getModelPath() #+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     return [
-    tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10),
+    tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5),
     tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     ]
 
@@ -98,6 +101,10 @@ if TRAIN:
     x_train, y_train = data_management.getTrainDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
     x_val, y_val = data_management.getValDataset(HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
 
+    # set evaluation interval dependent on the dataset size
+    if EVALUATION_INTERVAL == 0:
+        EVALUATION_INTERVAL = int(len(x_train) / BATCH_SIZE)
+
     train_data = tf.data.Dataset.from_tensor_slices((x_train, y_train))
     train_data = train_data.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE).repeat()
 
@@ -106,9 +113,9 @@ if TRAIN:
 
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.LSTM(LSTM_SIZE, input_shape=(None, x_train.shape[-1])))
-    model.add(tf.keras.layers.Dropout(0.5))
+    #model.add(tf.keras.layers.Dropout(0.5))
     model.add(tf.keras.layers.Dense(FULLY_CONNECTED_LAYER_SIZE, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.5))
+    #model.add(tf.keras.layers.Dropout(0.5))
     model.add(tf.keras.layers.Dense(TARGET_LENGTH))
 
     model.compile(optimizer='adam', loss='mse')

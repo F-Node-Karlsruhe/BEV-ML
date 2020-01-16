@@ -40,7 +40,9 @@ def getModelPath():
     '''
         returns the path for the model containing the model specific parameters
     '''
-    return 'models/' + NAME + '_' + str(CELL_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE)
+    return os.path.join(
+    'models',
+    NAME + '_' + str(LSTM_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE))
 
 
 # enable gpu processing on windows10
