@@ -4,12 +4,14 @@ RELEVANT_COLUMS = {'c_battery_size_max': 'int32', 'c_kombi_current_remaining_ran
 
 DATE_COLUMS = ['time_p', 'time_unp', 'time_fin']
 
+dateparse = lambda x: pd.datetime.strptime(x, '%d.%m.%y %H:%M')
+
 PATH_RAW = 'data/raw.csv'
 
 DATASET = None
 
 def readRelevantColumns ():
-    return pd.read_csv(PATH_RAW, sep=';', dtype=RELEVANT_COLUMS, parse_dates=DATE_COLUMS)[RELEVANT_COLUMS.keys()]
+    return pd.read_csv(PATH_RAW, sep=';', dtype=RELEVANT_COLUMS, parse_dates=DATE_COLUMS, date_parser=dateparse)[RELEVANT_COLUMS.keys()]
 
 def loadData():
     global DATASET
