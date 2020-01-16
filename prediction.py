@@ -51,8 +51,6 @@ def getModelPath():
 gpus = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpus[0], True)
 
-# try to load the specific model
-model = tf.keras.models.load_model(getModelPath())
 
 def predict(model, time=PREDICTION_TIMESTAMP, history_length=HISTORY_LENGTH, target_length=TARGET_LENGTH, label_type=LABEL_TYPE, step_size=STEP_SIZE):
 
@@ -65,9 +63,9 @@ def predict(model, time=PREDICTION_TIMESTAMP, history_length=HISTORY_LENGTH, tar
     print('True value: ', label)
 
     if LABEL_TYPE == 'kwh':
-        visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
+        visualizer.plot_prediction_kwh(data, label, prediction, intervall=step_size, target=target_length)
     if LABEL_TYPE == 'count':
-        visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
+        visualizer.plot_prediction_count(data, label, prediction, intervall=step_size, target=target_length)
 
     #loss,acc = model.evaluate(x_val, y_val, batch_size=100)
 
@@ -75,4 +73,6 @@ def predict(model, time=PREDICTION_TIMESTAMP, history_length=HISTORY_LENGTH, tar
 
 
 if __name__ == "__main__":
+    # try to load the specific model
+    model = tf.keras.models.load_model(getModelPath())
     predict(model)

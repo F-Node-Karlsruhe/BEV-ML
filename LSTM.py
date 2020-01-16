@@ -20,7 +20,7 @@ Prediction settings
 TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 6, 6)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 20, 6)
 
 
 '''
@@ -30,10 +30,10 @@ Training parameters
 STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 8
+TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
 
 # label type: ['kwh', 'count']
 LABEL_TYPE = 'kwh'
