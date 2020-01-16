@@ -4,6 +4,8 @@ import data_management
 
 import visualizer
 
+import prediction
+
 import pandas as pd
 
 import os
@@ -25,10 +27,10 @@ PREDICTION_TIMESTAMP = pd.Timestamp(2018, 12, 6, 6)
 Training parameters
 '''
 # step size in minutes
-STEP_SIZE = 30
+STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 4
+TARGET_LENGTH = int(60/STEP_SIZE) * 8
 
 # history length in hours
 HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
@@ -51,7 +53,7 @@ BUFFER_SIZE = 10000
 Model parameters
 '''
 # size of the LSTM output layer
-LSTM_SIZE = 2048
+LSTM_SIZE = 1024
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
@@ -137,16 +139,5 @@ if TRAIN:
     visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + str(LSTM_SIZE))
 
 else:
-    data, norm_data, label = data_management.getTestData(PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
-
-    prediction = model.predict(norm_data)
-
-    print('Prediction: ', prediction[0])
-
-    print('True value: ', label)
-
-    if LABEL_TYPE == 'kwh':
-        visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
-    if LABEL_TYPE == 'count':
-        visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
+    prediction.predict(model, PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
 

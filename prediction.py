@@ -6,6 +6,8 @@ import data_management
 
 import visualizer
 
+import os
+
 '''
 Prediciton parameters
 '''
@@ -24,17 +26,17 @@ NAME = 'LSTM'
 # label type: ['kwh', 'count']
 LABEL_TYPE = 'kwh'
 
-# size of the memory cell output layer
-CELL_SIZE = 512
-
-# history length in minutes
-HISTORY_LENGTH = 60 * 24
-
-# target length in steps
-TARGET_LENGTH = 8
-
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
+
+# size of the memory cell output layer
+CELL_SIZE = 1024
+
+# target length in steps in hours
+TARGET_LENGTH = int(60/STEP_SIZE) * 8
+
+# history length in hours
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
 
 def getModelPath():
     '''
@@ -42,7 +44,7 @@ def getModelPath():
     '''
     return os.path.join(
     'models',
-    NAME + '_' + str(LSTM_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE))
+    NAME + '_' + str(CELL_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE))
 
 
 # enable gpu processing on windows10
@@ -52,19 +54,25 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 # try to load the specific model
 model = tf.keras.models.load_model(getModelPath())
 
-data, norm_data, label = data_management.getTestData(PREDICTION_TIMESTAMP, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE, PLZ)
+def predict(model, time=PREDICTION_TIMESTAMP, history_length=HISTORY_LENGTH, target_length=TARGET_LENGTH, label_type=LABEL_TYPE, step_size=STEP_SIZE):
 
-prediction = model.predict(norm_data)
+    data, norm_data, label = data_management.getTestData(time, history_length, target_length, label_type, step_size, PLZ)
 
-print('Prediction: ', prediction[0])
+    prediction = model.predict(norm_data)
 
-print('True value: ', label)
+    print('Prediction: ', prediction[0])
 
-if LABEL_TYPE == 'kwh':
-    visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
-if LABEL_TYPE == 'count':
-    visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
+    print('True value: ', label)
 
-#loss,acc = model.evaluate(x_val, y_val, batch_size=100)
+    if LABEL_TYPE == 'kwh':
+        visualizer.plot_prediction_kwh(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
+    if LABEL_TYPE == 'count':
+        visualizer.plot_prediction_count(data, label, prediction, intervall=STEP_SIZE, target=TARGET_LENGTH)
 
-#print("Final model, accuracy: {:5.2f}%".format(100*acc))
+    #loss,acc = model.evaluate(x_val, y_val, batch_size=100)
+
+    #print("Final model, accuracy: {:5.2f}%".format(100*acc))
+
+
+if __name__ == "__main__":
+    predict(model)
