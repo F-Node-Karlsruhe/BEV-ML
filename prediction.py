@@ -12,10 +12,10 @@ import os
 Prediciton parameters
 '''
 # timestamp till which data is given to predict future (year, month, day, hour, minute)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 6, 3, 15)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 3, 15)
 
 # PLZ prediciton
-PLZ = None #'5'
+PLZ = None #'56424'
 
 '''
 Model parameters
@@ -23,8 +23,8 @@ Model parameters
 # name of the model
 NAME = 'LSTM'
 
-# label type: ['kwh', 'count']
-LABEL_TYPE = 'kwh'
+# label type: ['kwh', 'count', 'minutes_charged']
+LABEL_TYPE = 'minutes_charged'
 
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
@@ -66,6 +66,8 @@ def predict(model, time=PREDICTION_TIMESTAMP, history_length=HISTORY_LENGTH, tar
         visualizer.plot_prediction_kwh(data, label, prediction, intervall=step_size, target=target_length)
     if LABEL_TYPE == 'count':
         visualizer.plot_prediction_count(data, label, prediction, intervall=step_size, target=target_length)
+    if LABEL_TYPE == 'minutes_charged':
+        visualizer.plot_prediction_minutes_charged(data, label, prediction, intervall=step_size, target=target_length)
 
     #loss,acc = model.evaluate(x_val, y_val, batch_size=100)
 

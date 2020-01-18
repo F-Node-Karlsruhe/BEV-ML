@@ -82,13 +82,14 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
     # add week of year
     norm_data['week_of_year'] = dataset['time_p'].apply(getNormWeekOfYear).resample(intervall, label='right', closed='right').mean()
     norm_data['day_of_week'] = dataset['time_p'].apply(getNormDayOfWeek).resample(intervall, label='right', closed='right').mean()
+
+    # normalize and resample temperature [-20, +40]
+    norm_data['c_temperature'] = dataset['c_temperature'].apply(normalizeNumber, args=[NORM_RANGE['c_temperature']]).resample(intervall, label='right', closed='right').mean()
     
     # normalize times in week 
     # for col in DATE_COLUMS:
         # dataset[col] = dataset[col].apply(normalizeDatetime)
     if label_type == 'kwh':
-        # normalize and resample temperature [-20, +40]
-        norm_data['c_temperature'] = dataset['c_temperature'].apply(normalizeNumber, args=[NORM_RANGE['c_temperature']]).resample(intervall, label='right', closed='right').mean()
 
         # normalize and resample batterysize [0, 100000]
         norm_data['c_battery_size_max'] = dataset['c_battery_size_max'].resample(intervall, label='right', closed='right').sum()
@@ -99,8 +100,7 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
         norm_data['soc_p'] = dataset['soc_p'].apply(normalizeNumber, args=[NORM_RANGE['soc_p']]).resample(intervall, label='right', closed='right').mean()
         norm_data['soc_unp'] = dataset['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']]).resample(intervall, label='right', closed='right').mean()
 
-    # normalize and resample delta kwh
-    if label_type == 'kwh':
+        # normalize and resample delta kwh
         norm_data['delta_kwh'] = dataset['delta_kwh'].resample(intervall, label='right', closed='right').sum()
         NORM_RANGE['delta_kwh'] = (0, norm_data['delta_kwh'].max())
         norm_data['delta_kwh'] = norm_data['delta_kwh'].apply(normalizeNumber, args=[NORM_RANGE['delta_kwh']])
@@ -110,6 +110,11 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
         norm_data['count'] = dataset['time_p'].resample(intervall, label='right', closed='right').count()
         NORM_RANGE['count'] = (0, norm_data['count'].max())
         norm_data['count'] = norm_data['count'].apply(normalizeNumber, args=[NORM_RANGE['count']])
+
+    if label_type == 'minutes_charged':
+        norm_data['minutes_charged'] = dataset['minutes_charged'].resample(intervall, label='right', closed='right').sum()
+        NORM_RANGE['minutes_charged'] = (0, norm_data['minutes_charged'].max())
+        norm_data['minutes_charged'] = norm_data['minutes_charged'].apply(normalizeNumber, args=[NORM_RANGE['minutes_charged']])
 
     # fill all nans
     norm_data.fillna(0, inplace=True)
@@ -129,6 +134,10 @@ def getKWHLabel(df):
 def getCountLabel(df):
     return df['count'].sum()
 
+# counts the the events in the target time frame
+def getMinutesChargedLabel(df):
+    return df['minutes_charged'].sum()
+
 # returns the label dependent on the selected label type
 def getLabel(df, labelType, current_time, target, step):
     label = []
@@ -139,6 +148,8 @@ def getLabel(df, labelType, current_time, target, step):
             label.append(getKWHLabel(df[relevant_time + t * step: relevant_time + (t+1) * step]))
         if labelType == 'count':
             label.append(getCountLabel(df[relevant_time + t * step: relevant_time + (t+1) * step]))
+        if labelType == 'minutes_charged':
+            label.append(getMinutesChargedLabel(df[relevant_time + t * step: relevant_time + (t+1) * step]))
 
     return label
 

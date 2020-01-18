@@ -35,8 +35,8 @@ TARGET_LENGTH = int(60/STEP_SIZE) * 24
 # history length in hours
 HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
 
-# label type: ['kwh', 'count']
-LABEL_TYPE = 'kwh'
+# label type: ['kwh', 'count', 'minutes_charged']
+LABEL_TYPE = 'minutes_charged'
 
 # number of epochs for each training
 EPOCHS = 100
@@ -47,6 +47,7 @@ BATCH_SIZE = 100
 # number of steps in each epoch -> 0 = auto
 EVALUATION_INTERVAL = 0
 
+# only change if you run into RAM issues
 BUFFER_SIZE = 10000
 
 '''
