@@ -17,7 +17,7 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = False
+TRAIN = True
 
 # timestamp till which data is given to predict future (year, month, day, hour)
 PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 20, 6)
@@ -27,7 +27,7 @@ PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 20, 6)
 Training parameters
 '''
 # step size in minutes
-STEP_SIZE = 60
+STEP_SIZE = 30
 
 # target length in steps in hours
 TARGET_LENGTH = int(60/STEP_SIZE) * 8
@@ -36,7 +36,7 @@ TARGET_LENGTH = int(60/STEP_SIZE) * 8
 HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'kwh'
+LABEL_TYPE = 'minutes_charged'
 
 # number of epochs for each training
 EPOCHS = 100
@@ -131,7 +131,7 @@ if TRAIN:
     history = model.fit(train_data, epochs=EPOCHS,
                                             steps_per_epoch=EVALUATION_INTERVAL,
                                             validation_data=val_data,
-                                            validation_steps=50,
+                                            validation_steps=int(len(x_val) / BATCH_SIZE),
                                             callbacks=getCallbacks())
     # save model
     model.save(getModelPath())
