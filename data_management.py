@@ -89,7 +89,7 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
     # normalize times in week 
     # for col in DATE_COLUMS:
         # dataset[col] = dataset[col].apply(normalizeDatetime)
-    if label_type == 'kwh':
+    if label_type == 'kwh' or label_type == 'minutes_charged':
 
         # normalize and resample batterysize [0, 100000]
         norm_data['c_battery_size_max'] = dataset['c_battery_size_max'].resample(intervall, label='right', closed='right').sum()
@@ -100,6 +100,8 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
         norm_data['soc_p'] = dataset['soc_p'].apply(normalizeNumber, args=[NORM_RANGE['soc_p']]).resample(intervall, label='right', closed='right').mean()
         norm_data['soc_unp'] = dataset['soc_unp'].apply(normalizeNumber, args=[NORM_RANGE['soc_unp']]).resample(intervall, label='right', closed='right').mean()
 
+
+    if label_type == 'kwh':
         # normalize and resample delta kwh
         norm_data['delta_kwh'] = dataset['delta_kwh'].resample(intervall, label='right', closed='right').sum()
         NORM_RANGE['delta_kwh'] = (0, norm_data['delta_kwh'].max())
@@ -111,6 +113,7 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
         NORM_RANGE['count'] = (0, norm_data['count'].max())
         norm_data['count'] = norm_data['count'].apply(normalizeNumber, args=[NORM_RANGE['count']])
 
+    # normalize minutes charged
     if label_type == 'minutes_charged':
         norm_data['minutes_charged'] = dataset['minutes_charged'].resample(intervall, label='right', closed='right').sum()
         NORM_RANGE['minutes_charged'] = (0, norm_data['minutes_charged'].max())
