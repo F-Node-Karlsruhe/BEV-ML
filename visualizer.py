@@ -4,6 +4,8 @@ import data_management
 
 import datetime
 
+import numpy as np
+
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
@@ -28,6 +30,8 @@ def plot_data(columns, resample_type, intervall=60):
       data_management.DATASET[['minutes_charged']].plot(legend=None)
       plt.ylabel('Minutes charged per ' + str(intervall))
 
+    if columns != None:
+      data_management.DATASET[columns].plot()
     plt.show()
 
 
@@ -79,6 +83,9 @@ def plot_prediction_count(data, label, prediction, intervall=60, target=1):
   
 
 def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
+
+  eff_error = np.absolute(np.subtract(label, prediction[0]))
+
   fig=plt.figure()
   ax=fig.add_subplot(111)
 
@@ -90,6 +97,8 @@ def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
                label='True Future')
   ax.plot(target_times, data_management.denormalizeNumber(prediction[0], data_management.NORM_RANGE[norm]), 'go-', markersize=10,
                label='Model Prediction')
+  ax.plot(target_times, data_management.denormalizeNumber(eff_error, data_management.NORM_RANGE[norm]), '--c^', markersize=5,
+               label='Effective Error')
 
   plt.title('Prediction example '+y_label)
 
@@ -100,4 +109,4 @@ def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
 
 if __name__ == "__main__":
     print('Visualizer started...')
-    plot_data(None, 'minutes_charged')
+    plot_data(None, 'count')
