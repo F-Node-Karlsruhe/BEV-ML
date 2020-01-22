@@ -17,7 +17,7 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = False
+TRAIN = True
 
 # timestamp till which data is given to predict future (year, month, day, hour)
 PREDICTION_TIMESTAMP = pd.Timestamp(2018, 5, 15, 6)
@@ -30,13 +30,13 @@ Training parameters
 STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 24
+TARGET_LENGTH = int(60/STEP_SIZE) * 8
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'minutes_charged'
+LABEL_TYPE = 'count'
 
 # number of epochs for each training
 EPOCHS = 100
@@ -54,7 +54,7 @@ BUFFER_SIZE = 10000
 Model parameters
 '''
 # size of the LSTM output layer
-LSTM_SIZE = 4096
+LSTM_SIZE = 1024
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
@@ -116,7 +116,7 @@ if TRAIN:
 
 # load already existing model
 if PRETRAINED or not TRAIN:
-    model = tf.keras.models.load_model(getModelPath())
+    model = tf.keras.models.load_model(data_management.getModelPath(NAME, LSTM_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
 
 if TRAIN:
     history = model.fit(train_data, epochs=EPOCHS,

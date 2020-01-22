@@ -24,7 +24,7 @@ Model parameters
 NAME = 'LSTM'
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'kwh'
+LABEL_TYPE = 'count'
 
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
