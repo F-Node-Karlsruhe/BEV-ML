@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime
 import numpy as np
+import os
 import sys
 
 # dtype
@@ -31,6 +32,14 @@ DATASET = None
 
 def readPrepData ():
     return pd.read_csv(PATH_PREP, sep=';', parse_dates=DATE_COLUMS)
+
+def getModelPath(name, cell_size, label_type, target_length, step_size):
+    '''
+        returns the path for the model containing the model specific parameters
+    '''
+    return os.path.join(
+    'models',
+    name + '_' + str(cell_size) + '__label_' + label_type + '__target_' + str(target_length) + '__step_' + str(step_size))
 
 # loads the DATASET in PATH_PREP
 def loadData():
@@ -211,6 +220,14 @@ def getTestData(timestamp, history, target, label_type, step, PLZ=None):
 
     return data, norm_data, label
 
+
+def getEvaluationData(target, label_type, step):
+    global DATASET
+    loadData()
+    DATASET = normalizeData(DATASET, label_type, step)[TRAIN_SPLIT:]
+    return DATASET
+
+    
 
 # inits the data management
 def init(label_type, resample_intervall=RESAMPLE_INTERVALL):

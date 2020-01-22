@@ -6,13 +6,11 @@ import data_management
 
 import visualizer
 
-import os
-
 '''
 Prediciton parameters
 '''
 # timestamp till which data is given to predict future (year, month, day, hour, minute)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 3, 15)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 3, 11)
 
 # PLZ prediciton -> set None if not wanted
 PLZ = None#'8'
@@ -24,7 +22,7 @@ Model parameters
 NAME = 'LSTM'
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'minutes_charged'
+LABEL_TYPE = 'kwh'
 
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
@@ -37,14 +35,6 @@ TARGET_LENGTH = int(60/STEP_SIZE) * 8
 
 # history length in hours
 HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
-
-def getModelPath():
-    '''
-        returns the path for the model containing the model specific parameters
-    '''
-    return os.path.join(
-    'models',
-    NAME + '_' + str(CELL_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE))
 
 
 # enable gpu processing on windows10
@@ -76,5 +66,5 @@ def predict(model, time=PREDICTION_TIMESTAMP, history_length=HISTORY_LENGTH, tar
 
 if __name__ == "__main__":
     # try to load the specific model
-    model = tf.keras.models.load_model(getModelPath())
+    model = tf.keras.models.load_model(data_management.getModelPath(NAME, CELL_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
     predict(model)

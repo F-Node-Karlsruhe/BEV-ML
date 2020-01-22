@@ -17,23 +17,23 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = True
+TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 20, 6)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 5, 15, 6)
 
 
 '''
 Training parameters
 '''
 # step size in minutes
-STEP_SIZE = 30
+STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 8
+TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
 
 # label type: ['kwh', 'count', 'minutes_charged']
 LABEL_TYPE = 'minutes_charged'
@@ -54,7 +54,7 @@ BUFFER_SIZE = 10000
 Model parameters
 '''
 # size of the LSTM output layer
-LSTM_SIZE = 1024
+LSTM_SIZE = 4096
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
@@ -63,17 +63,8 @@ FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
 PRETRAINED = False
 
 
-def getModelPath():
-    '''
-        returns the path for the model containing the model specific parameters
-    '''
-    return os.path.join(
-    'models',
-    NAME + '_' + str(LSTM_SIZE) + '__label_' + LABEL_TYPE + '__target_' + str(TARGET_LENGTH) + '__step_' + str(STEP_SIZE))
-
-
 def getCallbacks():
-    log_dir=getModelPath() #+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    log_dir=data_management.getModelPath(NAME, LSTM_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE) #+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     return [
     tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5),
     tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
@@ -81,7 +72,7 @@ def getCallbacks():
 
 # create model specific directory if neccesary
 try:
-    os.makedirs(getModelPath())
+    os.makedirs(data_management.getModelPath(NAME, LSTM_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
 except FileExistsError:
 # directory already exists
     pass
