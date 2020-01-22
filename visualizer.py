@@ -107,7 +107,7 @@ def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
   plt.ylabel(y_label)
   plt.show()
 
-def plot_target_error(data, label_type=None):
+def plot_error(data, ylabel, label_type):
   if label_type == 'kwh':
     data = data_management.denormalizeNumber(data, data_management.NORM_RANGE['delta_kwh'])
   elif label_type != None:
@@ -115,9 +115,16 @@ def plot_target_error(data, label_type=None):
 
   plt.plot(data, label='effective mean error')
   plt.legend()
-  plt.xlabel('target length')
+  plt.hlines(0, 0, 24, colors='k', linestyles='dotted')
+  plt.xlabel(ylabel)
   plt.ylabel(label_type)
   plt.show()
+
+def plot_target_error(data, label_type=None):
+  plot_error(data, 'target_length', label_type)
+
+def plot_hour_error(data, label_type=None):
+  plot_error(data, 'hour', label_type)
 
 if __name__ == "__main__":
     print('Visualizer started...')
