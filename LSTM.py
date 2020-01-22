@@ -30,13 +30,13 @@ Training parameters
 STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 8
+TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'count'
+LABEL_TYPE = 'kwh'
 
 # number of epochs for each training
 EPOCHS = 100
@@ -107,10 +107,9 @@ if TRAIN:
 
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.LSTM(LSTM_SIZE, input_shape=(None, x_train.shape[-1])))
-    #model.add(tf.keras.layers.Dropout(0.5))
     model.add(tf.keras.layers.Dense(FULLY_CONNECTED_LAYER_SIZE, activation='relu'))
-    #model.add(tf.keras.layers.Dropout(0.5))
-    model.add(tf.keras.layers.Dense(TARGET_LENGTH))
+    model.add(tf.keras.layers.Dense(FULLY_CONNECTED_LAYER_SIZE, activation='relu'))
+    model.add(tf.keras.layers.Dense(TARGET_LENGTH, activation='relu'))
 
     model.compile(optimizer='adam', loss='mse')
 
