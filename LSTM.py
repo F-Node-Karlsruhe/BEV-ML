@@ -125,7 +125,7 @@ if TRAIN:
                                             validation_steps=int(len(x_val) / BATCH_SIZE),
                                             callbacks=getCallbacks())
     # save model
-    model.save(getModelPath())
+    model.save(data_management.getModelPath(NAME, LSTM_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
     
     # show train history
     visualizer.plot_train_history(history, NAME + ' ' + LABEL_TYPE + ' ' + str(LSTM_SIZE))
