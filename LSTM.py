@@ -20,7 +20,7 @@ Prediction settings
 TRAIN = True
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 5, 15, 6)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 21, 15)
 
 
 '''
@@ -36,7 +36,7 @@ TARGET_LENGTH = int(60/STEP_SIZE) * 24
 HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'kwh'
+LABEL_TYPE = 'minutes_charged'
 
 # number of epochs for each training
 EPOCHS = 100
