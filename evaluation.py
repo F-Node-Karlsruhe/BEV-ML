@@ -24,7 +24,7 @@ Model parameters
 NAME = 'LSTM'
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'count'
+LABEL_TYPE = 'kwh'
 
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
@@ -45,6 +45,7 @@ model = tf.keras.models.load_model(data_management.getModelPath(NAME, CELL_SIZE,
 EVAL_DATA = data_management.getEvaluationData(TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
 
 
+
 # evaluate depending on the mode
 if EVALUATION_MODE == 'basic':
 
@@ -60,7 +61,7 @@ if EVALUATION_MODE == 'target':
 
     pred = model.predict(x_eval)
 
-    error = np.subtract(pred, y_eval)
+    error = np.subtract(pred, y_eval) * 100
 
     visualizer.plot_target_error(np.mean(error, axis=0), LABEL_TYPE)
 
@@ -82,7 +83,7 @@ if EVALUATION_MODE == 'hour':
 
         pred = model.predict(features)[0]
 
-        error = np.subtract(pred, label)
+        error = np.subtract(pred, label) * 100
 
         for hours in range(len(error)):
 
@@ -100,7 +101,7 @@ if EVALUATION_MODE == 'hour':
      
     print(result)
 
-    visualizer.plot_target_error(result, LABEL_TYPE)
+    visualizer.plot_hour_error(result, LABEL_TYPE)
         
     
     
