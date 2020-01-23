@@ -13,7 +13,10 @@ import datetime
 '''
 Evaluation parameters
 '''
-# ['basic', 'target', 'hour']
+# evaluation mode to choose from
+VALID_EVALUATION_MODES = ['basic', 'target', 'hour']
+
+# applied evaluation mode
 EVALUATION_MODE = 'hour'
 
 
@@ -33,20 +36,26 @@ STEP_SIZE = 60
 CELL_SIZE = 1024
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 1
+TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
+
+#check evaluation mode
+if EVALUATION_MODE not in VALID_EVALUATION_MODES:
+    raise ValueError(EVALUATION_MODE + ' not known. Please select a valid evaluation mode!')
+
 
 # load model
 model = tf.keras.models.load_model(data_management.getModelPath(NAME, CELL_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
+print('Loaded ' + data_management.getModelPath(NAME, CELL_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
 
 # load dataset
 EVAL_DATA = data_management.getEvaluationData(TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
 
 
-
 # evaluate depending on the mode
+print('Evaluating model ...')
 if EVALUATION_MODE == 'basic':
 
     x_eval, y_eval = data_management.getTFDataset(EVAL_DATA, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)

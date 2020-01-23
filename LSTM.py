@@ -30,7 +30,7 @@ Training parameters
 STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 1
+TARGET_LENGTH = int(60/STEP_SIZE) * 8
 
 # history length in hours
 HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
@@ -115,6 +115,7 @@ if TRAIN:
 
 # load already existing model
 if PRETRAINED or not TRAIN:
+    print('Loaded ' + data_management.getModelPath(NAME, LSTM_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
     model = tf.keras.models.load_model(data_management.getModelPath(NAME, LSTM_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
 
 if TRAIN:

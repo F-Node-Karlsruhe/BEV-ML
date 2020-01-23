@@ -101,7 +101,7 @@ def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
                label='Effective Error')
 
   plt.title('Prediction example '+y_label)
-
+  plt.ylim(bottom=0)
   plt.legend()
   plt.xlabel('Time')
   plt.ylabel(y_label)
@@ -111,8 +111,8 @@ def plot_error(data, ylabel, label_type):
 
   plt.plot(data, label='RSME')
   plt.legend()
+  plt.ylim(bottom=0, top=10)
   plt.title('RSME for label '+label_type)
-  plt.hlines(0, 0, 24, colors='k', linestyles='dotted')
   plt.xlabel(ylabel)
   plt.ylabel('%')
   plt.show()
