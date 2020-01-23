@@ -14,7 +14,7 @@ import datetime
 Evaluation parameters
 '''
 # ['basic', 'target', 'hour']
-EVALUATION_MODE = 'target'
+EVALUATION_MODE = 'hour'
 
 
 '''
@@ -24,7 +24,7 @@ Model parameters
 NAME = 'LSTM'
 
 # label type: ['kwh', 'count', 'minutes_charged']
-LABEL_TYPE = 'minutes_charged'
+LABEL_TYPE = 'kwh'
 
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
@@ -33,10 +33,10 @@ STEP_SIZE = 60
 CELL_SIZE = 1024
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 24
+TARGET_LENGTH = int(60/STEP_SIZE) * 1
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
 
 # load model
 model = tf.keras.models.load_model(data_management.getModelPath(NAME, CELL_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
@@ -61,9 +61,9 @@ if EVALUATION_MODE == 'target':
 
     pred = model.predict(x_eval)
 
-    error = np.absolute(np.subtract(pred, y_eval)) * 100
+    error = np.square(np.subtract(pred, y_eval))
 
-    visualizer.plot_target_error(np.mean(error, axis=0), LABEL_TYPE)
+    visualizer.plot_target_error(np.sqrt(np.mean(error, axis=0)) * 100, LABEL_TYPE)
 
 if EVALUATION_MODE == 'hour':
 
@@ -83,7 +83,7 @@ if EVALUATION_MODE == 'hour':
 
         pred = model.predict(features)[0]
 
-        error = np.absolute(np.subtract(pred, label)) * 100
+        error = np.square(np.subtract(pred, label))
 
         for hours in range(len(error)):
 
@@ -97,7 +97,7 @@ if EVALUATION_MODE == 'hour':
     result = np.zeros(24)
 
     for idx, val in enumerate(hour_eval_data):
-        result[idx] = np.mean(val)
+        result[idx] = np.sqrt(np.mean(val)) * 100
      
     print(result)
 

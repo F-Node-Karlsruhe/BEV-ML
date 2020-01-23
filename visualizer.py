@@ -109,9 +109,9 @@ def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
 
 def plot_error(data, ylabel, label_type):
 
-  plt.plot(data, label='mean error')
+  plt.plot(data, label='RSME')
   plt.legend()
-  plt.title('Mean error for label '+label_type)
+  plt.title('RSME for label '+label_type)
   plt.hlines(0, 0, 24, colors='k', linestyles='dotted')
   plt.xlabel(ylabel)
   plt.ylabel('%')
