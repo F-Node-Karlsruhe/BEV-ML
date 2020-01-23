@@ -13,6 +13,8 @@ DATASET_USAGE = 1.0
 # train split after resampling
 TRAIN_SPLIT = 0.9
 
+TRAIN_SPLIT_EFF = 0
+
 # resample intervall in minutes
 RESAMPLE_INTERVALL = 60
 
@@ -82,7 +84,7 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
 
     global NORM_RANGE
 
-    global TRAIN_SPLIT
+    global TRAIN_SPLIT_EFF
 
     print('Resample and normalize data ...')
     # init nor data with time
@@ -132,7 +134,7 @@ def normalizeData(dataset, label_type, intervall=RESAMPLE_INTERVALL):
     norm_data.fillna(0, inplace=True)
 
     # adjust train split
-    TRAIN_SPLIT = int(len(norm_data.index) * TRAIN_SPLIT)
+    TRAIN_SPLIT_EFF = int(len(norm_data.index) * TRAIN_SPLIT)
 
     return norm_data
 
@@ -201,12 +203,12 @@ def getTFDataset(dataset, history, target, lable_type, step=0 ):
 # returns a training dataset based on history in minutes, target in minutes and label type
 def getTrainDataset(history, target_time, label_type, step=0):
     global DATASET
-    return getTFDataset(DATASET[:TRAIN_SPLIT], history, target_time, label_type, step=step)
+    return getTFDataset(DATASET[:TRAIN_SPLIT_EFF], history, target_time, label_type, step=step)
 
 # returns a test dataset based on history in minutes, target in minutes and label type
 def getValDataset(history, target_time, label_type, step=0):
     global DATASET
-    return getTFDataset(DATASET[TRAIN_SPLIT:], history, target_time, label_type, step=step)
+    return getTFDataset(DATASET[TRAIN_SPLIT_EFF:], history, target_time, label_type, step=step)
 
 def getTestData(timestamp, history, target, label_type, step, PLZ=None):
     global DATASET
@@ -224,7 +226,7 @@ def getTestData(timestamp, history, target, label_type, step, PLZ=None):
 def getEvaluationData(target, label_type, step):
     global DATASET
     loadData()
-    DATASET = normalizeData(DATASET, label_type, step)[TRAIN_SPLIT:]
+    DATASET = normalizeData(DATASET, label_type, step)[TRAIN_SPLIT_EFF:]
     return DATASET
 
     

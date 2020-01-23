@@ -107,21 +107,26 @@ def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
   plt.ylabel(y_label)
   plt.show()
 
-def plot_error(data, ylabel, label_type):
+def plot_error(data, spec, ev_mode):
 
-  plt.plot(data, label='RSME')
+  fig=plt.figure()
+  ax=fig.add_subplot(111)
+
+  for i in range(len(data)):
+    ax.plot(data[i], label=spec[i])
+
   plt.legend()
-  plt.ylim(bottom=0, top=10)
-  plt.title('RSME for label '+label_type)
-  plt.xlabel(ylabel)
+  plt.ylim(bottom=0)
+  plt.title('RSME per ' + ev_mode)
+  plt.xlabel(ev_mode)
   plt.ylabel('%')
   plt.show()
 
-def plot_target_error(data, label_type):
-  plot_error(data, 'target_length', label_type)
+def plot_target_error(data, spec):
+  plot_error(data, spec, 'target length')
 
-def plot_hour_error(data, label_type):
-  plot_error(data, 'hour', label_type)
+def plot_hour_error(data, spec):
+  plot_error(data, spec, 'hour of day')
 
 if __name__ == "__main__":
     print('Visualizer started...')
