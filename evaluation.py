@@ -137,14 +137,12 @@ eval_result.append(evaluate())
 eval_result_spec.append(getSpec())
 
 # Define different model
-# HISTORY 8 hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  8
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  12
 eval_result.append(evaluate(HISTORY_LENGTH=HISTORY_LENGTH))
 eval_result_spec.append(getSpec(HISTORY_LENGTH=HISTORY_LENGTH))
 
 # Define different model
-# HISTORY 4 hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  4
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  6
 eval_result.append(evaluate(HISTORY_LENGTH=HISTORY_LENGTH))
 eval_result_spec.append(getSpec(HISTORY_LENGTH=HISTORY_LENGTH))
 

@@ -130,4 +130,4 @@ def plot_hour_error(data, spec):
 
 if __name__ == "__main__":
     print('Visualizer started...')
-    plot_data(None, 'count')
+    plot_data(None, 'kwh')

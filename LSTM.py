@@ -30,10 +30,10 @@ Training parameters
 STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 8
+TARGET_LENGTH = int(60/STEP_SIZE) * 48
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24 * 5
 
 # label type: ['kwh', 'count', 'minutes_charged']
 LABEL_TYPE = 'kwh'
