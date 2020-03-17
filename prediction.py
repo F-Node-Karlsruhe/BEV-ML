@@ -13,7 +13,7 @@ Prediciton parameters
 PREDICTION_TIMESTAMP = pd.Timestamp(2018, 6, 18, 15)
 
 # PLZ prediciton -> set None if not wanted
-PLZ = None#'8'
+PLZ = None#'7'
 
 '''
 Model parameters
@@ -23,7 +23,6 @@ NAME = 'LSTM'
 
 # label type: ['kwh', 'count', 'minutes_charged']
 LABEL_TYPE = 'kwh'
-
 # step size in minutes -> 0 for auto
 STEP_SIZE = 60
 
@@ -31,10 +30,10 @@ STEP_SIZE = 60
 CELL_SIZE = 1024
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 8
+TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
 
 
 # enable gpu processing on windows10

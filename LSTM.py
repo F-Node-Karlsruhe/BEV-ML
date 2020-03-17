@@ -17,10 +17,10 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = True
+TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 21, 15)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 15, 15)
 
 
 '''
@@ -30,10 +30,10 @@ Training parameters
 STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 48
+TARGET_LENGTH = int(60/STEP_SIZE) * 96
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24 * 5
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  96
 
 # label type: ['kwh', 'count', 'minutes_charged']
 LABEL_TYPE = 'kwh'
@@ -54,7 +54,7 @@ BUFFER_SIZE = 10000
 Model parameters
 '''
 # size of the LSTM output layer
-LSTM_SIZE = 1024
+LSTM_SIZE = 2048
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2

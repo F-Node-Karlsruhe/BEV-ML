@@ -39,13 +39,13 @@ CELL_SIZE = 1024
 TARGET_LENGTH = int(60/STEP_SIZE) * 8
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  24
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
 
 #check evaluation mode
 if EVALUATION_MODE not in VALID_EVALUATION_MODES:
     raise ValueError(EVALUATION_MODE + ' not known. Please select a valid evaluation mode!')
 
-def evaluate(LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TARGET_LENGTH=TARGET_LENGTH, HISTORY_LENGTH=HISTORY_LENGTH):
+def evaluate(NAME=NAME, LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TARGET_LENGTH=TARGET_LENGTH, HISTORY_LENGTH=HISTORY_LENGTH):
     # load model
     model = tf.keras.models.load_model(data_management.getModelPath(NAME, CELL_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
     print('Loaded ' + data_management.getModelPath(NAME, CELL_SIZE, LABEL_TYPE, TARGET_LENGTH, STEP_SIZE))
@@ -55,7 +55,7 @@ def evaluate(LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TA
 
 
     # evaluate depending on the mode
-    print('Evaluating model ' + getSpec(LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TARGET_LENGTH=TARGET_LENGTH, HISTORY_LENGTH=HISTORY_LENGTH) + ' ...')
+    print('Evaluating model ' + getSpec(NAME=NAME, LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TARGET_LENGTH=TARGET_LENGTH, HISTORY_LENGTH=HISTORY_LENGTH) + ' ...')
     if EVALUATION_MODE == 'basic':
 
         x_eval, y_eval = data_management.getTFDataset(EVAL_DATA, HISTORY_LENGTH, TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)
@@ -120,8 +120,8 @@ def evaluate(LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TA
 
     return None
 
-def getSpec(LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TARGET_LENGTH=TARGET_LENGTH, HISTORY_LENGTH=HISTORY_LENGTH):
-    return 'label:' + LABEL_TYPE + ' step:' + str(STEP_SIZE) + ' cell:' + str(CELL_SIZE) + ' target:' + str(TARGET_LENGTH) + ' history:' + str(int(HISTORY_LENGTH/STEP_SIZE))
+def getSpec(NAME=NAME, LABEL_TYPE=LABEL_TYPE, STEP_SIZE=STEP_SIZE, CELL_SIZE=CELL_SIZE, TARGET_LENGTH=TARGET_LENGTH, HISTORY_LENGTH=HISTORY_LENGTH):
+    return 'name:' + NAME + 'label:' + LABEL_TYPE + ' step:' + str(STEP_SIZE) + ' cell:' + str(CELL_SIZE) + ' target:' + str(TARGET_LENGTH) + ' history:' + str(int(HISTORY_LENGTH/STEP_SIZE))
         
     
 
@@ -137,14 +137,10 @@ eval_result.append(evaluate())
 eval_result_spec.append(getSpec())
 
 # Define different model
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  12
-eval_result.append(evaluate(HISTORY_LENGTH=HISTORY_LENGTH))
-eval_result_spec.append(getSpec(HISTORY_LENGTH=HISTORY_LENGTH))
+NAME = 'GRU'
+eval_result.append(evaluate(NAME=NAME))
+eval_result_spec.append(getSpec(NAME=NAME))
 
-# Define different model
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  6
-eval_result.append(evaluate(HISTORY_LENGTH=HISTORY_LENGTH))
-eval_result_spec.append(getSpec(HISTORY_LENGTH=HISTORY_LENGTH))
 
 if EVALUATION_MODE == 'hour':
     visualizer.plot_hour_error(eval_result, eval_result_spec)
