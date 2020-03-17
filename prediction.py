@@ -33,7 +33,7 @@ CELL_SIZE = 1024
 TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  96
 
 
 # enable gpu processing on windows10

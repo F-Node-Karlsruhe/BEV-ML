@@ -10,6 +10,8 @@ import visualizer
 
 import datetime
 
+import SLP
+
 '''
 Evaluation parameters
 '''
@@ -36,10 +38,10 @@ STEP_SIZE = 60
 CELL_SIZE = 1024
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 8
+TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
-HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  48
+HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  96
 
 #check evaluation mode
 if EVALUATION_MODE not in VALID_EVALUATION_MODES:
@@ -141,6 +143,9 @@ NAME = 'GRU'
 eval_result.append(evaluate(NAME=NAME))
 eval_result_spec.append(getSpec(NAME=NAME))
 
+# Evaluate SLP
+eval_result.append(SLP.evaluate(data_management.getEvaluationData(TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)))
+eval_result_spec.append('SLP')
 
 if EVALUATION_MODE == 'hour':
     visualizer.plot_hour_error(eval_result, eval_result_spec)
