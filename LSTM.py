@@ -17,7 +17,7 @@ NAME = 'LSTM'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = False
+TRAIN = True
 
 # timestamp till which data is given to predict future (year, month, day, hour)
 PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 15, 15)
@@ -30,7 +30,7 @@ Training parameters
 STEP_SIZE = 60
 
 # target length in steps in hours
-TARGET_LENGTH = int(60/STEP_SIZE) * 96
+TARGET_LENGTH = int(60/STEP_SIZE) * 24
 
 # history length in hours
 HISTORY_LENGTH = STEP_SIZE * int(60/STEP_SIZE) *  96
@@ -54,7 +54,7 @@ BUFFER_SIZE = 10000
 Model parameters
 '''
 # size of the LSTM output layer
-LSTM_SIZE = 2048
+LSTM_SIZE = 16
 
 # size of the fully connected layer after the LSTM
 FULLY_CONNECTED_LAYER_SIZE = LSTM_SIZE * 2
@@ -82,8 +82,8 @@ except FileExistsError:
 #tf.random.set_seed(12345)
 
 # enable gpu processing on windows10
-gpus = tf.config.experimental.list_physical_devices('GPU')
-tf.config.experimental.set_memory_growth(gpus[0], True)
+#gpus = tf.config.experimental.list_physical_devices('GPU')
+#tf.config.experimental.set_memory_growth(gpus[0], True)
 
 model = None
 

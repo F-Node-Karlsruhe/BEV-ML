@@ -17,10 +17,10 @@ NAME = 'GRU'
 Prediction settings
 '''
 # Train model -> False: Predict the prediction timestamp
-TRAIN = True
+TRAIN = False
 
 # timestamp till which data is given to predict future (year, month, day, hour)
-PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 15, 15)
+PREDICTION_TIMESTAMP = pd.Timestamp(2018, 7, 12, 15)
 
 
 '''
@@ -54,7 +54,7 @@ BUFFER_SIZE = 10000
 Model parameters
 '''
 # size of the GRU output layer
-GRU_SIZE = 1024
+GRU_SIZE = 64
 
 # size of the fully connected layer after the GRU
 FULLY_CONNECTED_LAYER_SIZE = GRU_SIZE * 2
@@ -82,8 +82,8 @@ except FileExistsError:
 #tf.random.set_seed(12345)
 
 # enable gpu processing on windows10
-gpus = tf.config.experimental.list_physical_devices('GPU')
-tf.config.experimental.set_memory_growth(gpus[0], True)
+#gpus = tf.config.experimental.list_physical_devices('GPU')
+#tf.config.experimental.set_memory_growth(gpus[0], True)
 
 model = None
 

@@ -26,7 +26,7 @@ EVALUATION_MODE = 'hour'
 Model parameters
 '''
 # name of the model
-NAME = 'LSTM'
+NAME = 'GRU'
 
 # label type: ['kwh', 'count', 'minutes_charged']
 LABEL_TYPE = 'kwh'
@@ -35,7 +35,7 @@ LABEL_TYPE = 'kwh'
 STEP_SIZE = 60
 
 # size of the memory cell output layer
-CELL_SIZE = 1024
+CELL_SIZE = 64
 
 # target length in steps in hours
 TARGET_LENGTH = int(60/STEP_SIZE) * 24
@@ -138,10 +138,12 @@ eval_result_spec = []
 eval_result.append(evaluate())
 eval_result_spec.append(getSpec())
 
+
 # Define different model
-NAME = 'GRU'
+NAME = 'LSTM'
 eval_result.append(evaluate(NAME=NAME))
 eval_result_spec.append(getSpec(NAME=NAME))
+
 
 # Evaluate SLP
 eval_result.append(SLP.evaluate(data_management.getEvaluationData(TARGET_LENGTH, LABEL_TYPE, STEP_SIZE)))

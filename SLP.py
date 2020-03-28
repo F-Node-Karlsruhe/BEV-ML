@@ -153,9 +153,13 @@ SLP = np.array([0.074,
 
 MAX = np.amax(SLP)
 
-def predict(timestamp):
-    index = timestamp.hour * 6 + int(timestamp.minute / 10 )
-    return SLP[index]/MAX * 0.5
+def predict(timestamp, target=1, step_size=60):
+    result = []
+    for _ in range(target):
+        index = (timestamp.hour + 1 ) * 6 + int(timestamp.minute / 10 )
+        result.append(SLP[index]/MAX * 0.6)
+        timestamp = timestamp + datetime.timedelta(minutes=step_size)
+    return np.array(result)
 
 
 def evaluate(EVAL_DATA):
@@ -172,7 +176,7 @@ def evaluate(EVAL_DATA):
 
         label = np.array(data_management.getLabel(EVAL_DATA[start_date:start_date+step], 'kwh', start_date, 1, step))
 
-        pred = predict(start_date+step)
+        pred = predict(start_date+step)[0]
 
         error = np.square(np.subtract(pred, label))
 

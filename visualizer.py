@@ -84,7 +84,7 @@ def plot_prediction_count(data, label, prediction, intervall=60, target=1):
 
 def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
 
-  eff_error = np.absolute(np.subtract(label, prediction[0]))
+  eff_error = np.absolute(np.subtract(label, prediction))
 
   fig=plt.figure()
   ax=fig.add_subplot(111)
@@ -95,7 +95,7 @@ def plot_prediction(data, label, prediction, norm, y_label, intervall, target):
 
   ax.plot(target_times, data_management.denormalizeNumber(label, data_management.NORM_RANGE[norm]), 'rx-', markersize=10,
                label='True Future')
-  ax.plot(target_times, data_management.denormalizeNumber(prediction[0], data_management.NORM_RANGE[norm]), 'go-', markersize=10,
+  ax.plot(target_times, data_management.denormalizeNumber(prediction, data_management.NORM_RANGE[norm]), 'go-', markersize=10,
                label='Model Prediction')
   ax.plot(target_times, data_management.denormalizeNumber(eff_error, data_management.NORM_RANGE[norm]), '--c^', markersize=5,
                label='Effective Error')
